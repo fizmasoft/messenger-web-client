@@ -1,0 +1,12 @@
+export const CODES = {
+  AUTH: 1_000,
+  ROUTE: 4_000,
+  BASE: 10_000,
+  ROLE: 11_000,
+  USER: 12_000,
+  DASHBOARD: 13_000,
+  INSPECTOR: 14_000,
+  REGION: 16_000,
+  DISTRICT: 17_000,
+  FILE: 19_000,
+};

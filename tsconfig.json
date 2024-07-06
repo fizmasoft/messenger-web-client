@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "target": "ES2021",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "declaration": true,
+    "declarationDir": "./dist/typings",
+    "outDir": "./dist",
+    "rootDir": "src",
+    "baseUrl": "./",
+    "importHelpers": true,
+    "types": ["node", "reflect-metadata"],
+    "paths": {
+      "src/*": ["src/*"],
+      "tslib": [
+        "../tslib/tslib.d.ts"
+      ]
+    },
+    "esModuleInterop": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts", "dist"]
+}
