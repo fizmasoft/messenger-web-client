@@ -1,6 +1,7 @@
+import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios';
-import type { AxiosResponse, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { localStg } from '../';
+import { RESPONSE_CODES } from '../../common/constant';
 
 type RefreshRequestQueue = (config: AxiosRequestConfig) => void;
 
@@ -11,9 +12,8 @@ type RefreshRequestQueue = (config: AxiosRequestConfig) => void;
 export default class CustomAxiosInstance {
   readonly instance: AxiosInstance;
 
-  readonly #handleRefreshToken: () => Promise<string>;
-
   #isRefreshing: boolean;
+  #refreshTokenUrl: string;
 
   #retryQueues: RefreshRequestQueue[];
 
@@ -23,24 +23,39 @@ export default class CustomAxiosInstance {
    */
   constructor(
     axiosConfig: AxiosRequestConfig,
-    { handleRefreshToken }: { handleRefreshToken: () => Promise<string> },
+    {
+      refreshTokenUrl,
+    }: {
+      refreshTokenUrl?: string;
+    },
   ) {
     this.instance = axios.create(axiosConfig);
-    this.setInterceptor();
-    this.#handleRefreshToken = handleRefreshToken;
     this.#isRefreshing = false;
     this.#retryQueues = [];
+    this.#refreshTokenUrl = refreshTokenUrl;
+    this.setInterceptor();
   }
 
-  private async refreshTokenAndReRequest(response: AxiosResponse<any>) {
+  async #handleRefreshToken() {
+    const { data } = await axios
+      .create(this.instance.defaults)
+      .get<ApiAuth.IUserLogin>(this.#refreshTokenUrl);
+    if (data && data.token) {
+      localStg.set('token', { access: data.token.accessToken, refresh: data.token.refreshToken });
+    }
+
+    return data.token.accessToken;
+  }
+
+  async #refreshTokenAndReRequest(response: AxiosResponse<any>) {
     if (this.#isRefreshing) {
       return;
     }
 
     this.#isRefreshing = true;
-    const refreshConfig = await this.#handleRefreshToken();
-    if (refreshConfig) {
-      response.config.headers.Authorization = `Bearer ${localStg.get('token')?.access || ''}`;
+    const accessToken = await this.#handleRefreshToken();
+    if (accessToken) {
+      response.config.headers.Authorization = `Bearer ${accessToken}`;
       this.#retryQueues.map((cb) => cb(response.config));
     }
     this.#retryQueues = [];
@@ -60,47 +75,27 @@ export default class CustomAxiosInstance {
       return handleConfig;
     });
 
-    // this.instance.interceptors.response.use(
-    //   (response): any => {
-    //     const { status } = response;
+    this.instance.interceptors.response.use(
+      (response) => response,
+      async (axiosError: AxiosError) => {
+        if (
+          (axiosError.response?.data['code'] &&
+            RESPONSE_CODES.REFRESH_TOKEN_CODES.includes(axiosError.response?.data['code'])) ||
+          RESPONSE_CODES.REFRESH_TOKEN_CODES.includes(axiosError.response?.status)
+        ) {
+          // original request
+          const originRequest = new Promise((resolve) => {
+            this.#retryQueues.push((refreshConfig: AxiosRequestConfig) => {
+              resolve(this.instance.request(refreshConfig));
+            });
+          });
 
-    //     if (!(status === 200 || status < 300 || status === 304)) {
-    //       const error = handleResponseError(response);
-    //       return handleServiceResult<AxiosResponse<Service.IFailedResult>>(error, null, null);
-    //     }
+          await this.#refreshTokenAndReRequest(axiosError.response);
 
-    //     const backend = response.data;
-
-    //     if (backend.success) {
-    //       return handleServiceResult<AxiosResponse<Service.ISuccessResult>>(
-    //         null,
-    //         backend.data,
-    //         backend.meta,
-    //       );
-    //     }
-
-    //     const error = handleBackendError(backend);
-    //     return handleServiceResult<AxiosResponse<Service.IFailedResult>>(error, null, null);
-    //   }, // as (response: AxiosResponse<any>) => Promise<AxiosResponse<any>>,
-    //   (axiosError: AxiosError) => {
-    //     const error = handleAxiosError(axiosError);
-    //     // // Token expires, refresh token
-    //     // if (CONSTANTS.REFRESH_TOKEN_CODES.includes(axiosError.response?.status)) {
-    //     //   // original request
-    //     //   const originRequest = new Promise((resolve) => {
-    //     //     this.#retryQueues.push((refreshConfig: AxiosRequestConfig) => {
-    //     //       axiosError.response?.config.headers.Authorization = `Bearer ${refreshConfig.headers?.Authorization}`;
-    //     //       resolve(this.instance.request(refreshConfig));
-    //     //     });
-    //     //   });
-
-    //     //   await this.refreshTokenAndReRequest(response);
-
-    //     //   return originRequest;
-    //     // }
-
-    //     return handleServiceResult(error, null, null);
-    //   },
-    // );
+          return originRequest;
+        }
+        throw axiosError;
+      },
+    );
   }
 }

@@ -33,8 +33,6 @@ declare namespace StorageInterface {
     /** User Info */
     userInfo: IUser;
 
-    currentOrganization: ApiAuth.IUserOrganization | null;
-
     multiTabRoutes: any[];
     // multiTabRoutes: App.GlobalTabRoute[]
     // /** Multi-tab routing information */

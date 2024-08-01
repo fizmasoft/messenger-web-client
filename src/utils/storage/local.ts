@@ -19,15 +19,18 @@ if (ENV.isBrowser) {
   localStorage = {
     clear() {
       map.clear();
+      return map;
     },
     getItem(key) {
       return map.get(key);
     },
     removeItem(key) {
       map.delete(key);
+      return map;
     },
     setItem(key, value) {
       map.set(key, value);
+      return map;
     },
   };
 }
@@ -87,4 +90,4 @@ function createLocalStorage<T extends StorageInterface.ILocal = StorageInterface
   };
 }
 
-export const localStg = createLocalStorage();
+export const localStg = createLocalStorage<StorageInterface.ILocal>();

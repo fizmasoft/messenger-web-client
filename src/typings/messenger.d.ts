@@ -2,6 +2,7 @@ declare namespace Messenger {
   type ChatType = 'private' | 'group' | 'channel' | 'bot';
   type MessageType =
     | 'text'
+    | 'wanted'
     | 'audio'
     | 'photo'
     | 'gif'
@@ -116,7 +117,16 @@ declare namespace Messenger {
     };
   };
 
-  interface IOnUpdate {}
+  interface IOnUpdate {
+    _id: string;
+    from: {
+      firstName: string;
+      lastName: string;
+      username: string | null;
+      fullName: string;
+    };
+    message: ApiMessageManagement.IMessage;
+  }
 
   enum ChatACtion {
     TYPING = 'typing',

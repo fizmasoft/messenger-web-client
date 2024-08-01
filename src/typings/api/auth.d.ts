@@ -1,35 +1,23 @@
 declare namespace ApiAuth {
   interface IToken {
-    tokenType: 'bearer';
     accessToken: string;
-    accessExpiresAt: number;
+    accessTokenExpiresIn: number;
     refreshToken: string;
-    refreshExpiresAt: number;
-  }
-
-  interface IUserGetMeUser {
-    id: number;
-    name: string;
-    surname: string;
-    patronymic: string;
-    birthday: string;
-    phone: string;
-    image: string | null;
-    status: 'active';
-    createdAt: string;
-    createdAtDate: string;
-    createdAtTime: string;
+    refreshTokenExpiresIn: number;
   }
 
   interface IUserGetMe {
-    user: IUserGetMeUser;
+    _id: string;
+    firstName: string;
+    lastName: string;
+    middleName: string;
+    email: string;
+    username: string;
+    phoneNumber: string;
+    birthday: string;
   }
 
-  interface IRefreshToken {
-    token: {
-      accessToken: string;
-      tokenType: string;
-      expiresIn: number;
-    };
+  interface IUserLogin extends IUserGetMe {
+    token: IToken;
   }
 }

@@ -1,12 +1,12 @@
-import { green, red } from 'ansis';
-import { v1 as uuidV1 } from 'uuid';
-import { AxiosInstance } from 'axios';
-import { io } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
+import { green, red } from 'ansis';
+import { AxiosInstance } from 'axios';
 import type { ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
-import CustomAxiosInstance from './utils/request/instance';
-import { localStg } from './utils';
+import { io } from 'socket.io-client';
+import { v1 as uuidV1 } from 'uuid';
 import { ENV } from './common/config';
+import { localStg } from './utils';
+import CustomAxiosInstance from './utils/request/instance';
 
 enum DeviceTypesEnum {
   WEB = 'web',
@@ -22,7 +22,9 @@ interface IPollingOptions {
 type CustomOptions = {
   baseURL: string;
   polling?: IPollingOptions;
-  token: string | (() => string | Promise<string>);
+  token:
+    | { access: string; refresh: string }
+    | (() => { access: string; refresh: string } | Promise<{ access: string; refresh: string }>);
   languageGetter?: () => I18nType.LangType;
   headers?: Record<string, string>;
 };
@@ -53,13 +55,16 @@ const requiredHeaders = {
 };
 
 class Messenger {
-  #tokenGetter: string | (() => string | Promise<string>);
+  // #tokenGetter:
+  //   | { access: string; refresh: string }
+  //   | (() => { access: string; refresh: string } | Promise<{ access: string; refresh: string }>);
   #interval: NodeJS.Timer;
   #polling: IPollingOptions;
   #axiosInstance: AxiosInstance;
   #events: Partial<Record<keyof IEvents, (...args: any) => void>>;
+  #updatesHash: string | null = null;
 
-  #token: string;
+  #token: { access: string; refresh: string };
   // public languageGetter: () => string;
   public uid: string;
   public readonly socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
@@ -74,26 +79,30 @@ class Messenger {
     }: CustomOptions,
     options: Partial<ManagerOptions & SocketOptions> = {},
   ) {
-    this.#tokenGetter = token;
+    // this.#tokenGetter = token;
     languageGetter = languageGetter;
     this.uid = uid;
     this.#polling = polling;
     this.#events = {};
     this.#axiosInstance = new CustomAxiosInstance(
-      { baseURL: baseURL },
-      { handleRefreshToken: async () => '' },
+      { baseURL: baseURL, headers: requiredHeaders },
+      {
+        refreshTokenUrl: '/v1/auth/refresh-token',
+      },
     ).instance;
 
-    this.socket = io(baseURL, {
-      path: '/messenger',
-      auth: {
-        ...requiredHeaders,
-        ...headers,
-        token: this.#token,
-      },
-      extraHeaders: { ...requiredHeaders, ...headers },
-      ...options,
-    });
+    if (polling === null) {
+      this.socket = io(baseURL, {
+        path: '/messenger',
+        auth: {
+          ...requiredHeaders,
+          ...headers,
+          token: this.#token,
+        },
+        extraHeaders: { ...requiredHeaders, ...headers },
+        ...options,
+      });
+    }
 
     this.init = this.init.bind(this);
     this.close = this.close.bind(this);
@@ -108,7 +117,7 @@ class Messenger {
     this.getUpdates = this.getUpdates.bind(this);
     this.updateMessages = this.updateMessages.bind(this);
     this.getChats = this.getChats.bind(this);
-    this.init();
+    this.init(token);
   }
 
   public close() {
@@ -141,12 +150,17 @@ class Messenger {
     this.#interval = setInterval(intervalCallback, polling.interval);
   }
 
-  async init() {
-    if (typeof this.#tokenGetter === 'string') {
-      this.#token = this.#tokenGetter;
+  async init(
+    token:
+      | { access: string; refresh: string }
+      | (() => { access: string; refresh: string } | Promise<{ access: string; refresh: string }>),
+  ) {
+    if (typeof token === 'function') {
+      this.#token = await token();
     } else {
-      this.#token = await this.#tokenGetter();
+      this.#token = token;
     }
+    localStg.set('token', this.#token);
 
     if (this.#polling) {
       this.initPolling();
@@ -156,7 +170,7 @@ class Messenger {
     return this.socket
       .connect()
       .on('connect', () => {
-        console.log(green(`Socket successfully connected. socket.id: ${this.socket.id}`)); // x8WIv7-mJelg7on_ALbx
+        console.log(green(`Socket successfully connected. socket.id: ${this.socket.id}`));
       })
       .on('disconnect', (reason, details) => {
         console.log(
@@ -213,10 +227,18 @@ class Messenger {
     return data.data;
   }
 
+  public async sendMessage(
+    message: ApiMessageManagement.ISendMessage,
+  ): Promise<Api.MyApiResponse<ApiUserManagement.IUser>> {
+    const data = await this.#axiosInstance.post(`v1/chats/${message.to.chatId}/messages`, message);
+
+    return data.data;
+  }
+
   public async getChatMessages(
     chatId: string,
     { limit = 20, page = 1, search = '' }: { limit?: number; page?: number; search?: string },
-  ): Promise<Api.MyApiResponse<ApiUserManagement.IUser>> {
+  ): Promise<Api.MyApiResponse<ApiMessageManagement.IMessage>> {
     const data = await this.#axiosInstance.get<Api.MyApiResponse<ApiMessageManagement.IMessage>>(
       `/chats/${chatId}?search=${search}&limit=${limit}&page=${page}`,
     );
@@ -252,7 +274,7 @@ class Messenger {
   }
 
   public async getUpdates({
-    limit = 100,
+    limit = this.#polling.limit,
     page = 1,
     allowedUpdates = [],
   }: {
@@ -260,7 +282,30 @@ class Messenger {
     page?: number;
     allowedUpdates?: Messenger.MessageType[];
   } = {}): Promise<{ updates: Messenger.IOnUpdate[]; meta: any }> {
-    return { updates: [], meta: {} };
+    const { data } = await this.#axiosInstance
+      .get(
+        `/v1/users/updates?page=${page}&limit=${limit}&hash=${
+          this.#updatesHash ? this.#updatesHash : ''
+        }`,
+      )
+      .catch(() => ({
+        data: {
+          data: [],
+          meta: {
+            hash: null,
+            currentPage: 1,
+            limit: 100,
+            totalCount: 0,
+            totalPages: 0,
+          },
+        },
+      }));
+
+    if (data.meta.hash) {
+      this.#updatesHash = data.meta.hash;
+    }
+
+    return { updates: data.data, meta: data.meta };
   }
 
   public updateMessages(messages: []) {
@@ -282,17 +327,16 @@ class Messenger {
 
   public ping() {
     if (this.socket) {
-      console.log('ping');
-
       this.socket.send('hello');
       this.socket.emit('ping', new Date().toISOString());
     } else {
-      this.#axiosInstance.get('/check-health');
+      this.#axiosInstance.get('/check-health').catch();
     }
   }
 }
 
 let messenger: Messenger;
+
 export function getMessenger(
   customOptions: CustomOptions,
   options: Partial<ManagerOptions & SocketOptions> = {},
@@ -304,49 +348,3 @@ export function getMessenger(
   messenger = new Messenger(customOptions, options);
   return messenger;
 }
-
-messenger = getMessenger({
-  baseURL: 'ws://0.0.0.0:3000',
-  languageGetter() {
-    return 'Uz-Latin';
-  },
-  token: async () => {
-    let token = '';
-    // your logic here
-    return token;
-  },
-  polling: { interval: 100, limit: 100 },
-});
-
-console.log('Success started');
-
-messenger
-  .on('connect', (...args) => {
-    console.log('connected', args);
-  })
-  .on('reconnect_attempt', (...args) => {
-    console.log('reconnect_attempt', args);
-  })
-  .on('reconnect', (...args) => {
-    console.log('reconnect', args);
-  })
-  .on('disconnect', (reason, details) => {
-    console.log('disconnect', reason);
-  })
-  .on('pong', () => {
-    console.log('pong');
-  })
-  .on('update', (data) => {
-    console.log(data);
-  })
-  .on('chatAction', (action) => {
-    console.log(action);
-  });
-
-setInterval(() => {
-  const time = new Date().toISOString();
-  console.log('ping', time);
-
-  messenger.socket.send('hello');
-  messenger.socket.emit('ping', time);
-}, 1000);

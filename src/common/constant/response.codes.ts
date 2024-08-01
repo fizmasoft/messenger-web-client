@@ -1,0 +1,3 @@
+export const RESPONSE_CODES = {
+  REFRESH_TOKEN_CODES: [401, 104_401],
+};

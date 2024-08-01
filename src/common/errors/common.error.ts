@@ -1,5 +1,5 @@
 import { ValidationError } from 'class-validator';
-import { CODES } from '../constant/codes';
+import { CODES } from '../constant/response.codes';
 import { Replacements } from 'i18n';
 
 export class BaseException {

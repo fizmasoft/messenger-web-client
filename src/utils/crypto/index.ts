@@ -1,6 +1,6 @@
-import { serialize } from 'v8';
 import CryptoJS from 'crypto-js';
 import { v1 as uuidV1 } from 'uuid';
+// import { serialize } from 'v8';
 
 const cryptoSecret = uuidV1();
 
@@ -10,7 +10,8 @@ const cryptoSecret = uuidV1();
  */
 export function encrypt<T = unknown>(data: T) {
   return CryptoJS.AES.encrypt(
-    CryptoJS.lib.WordArray.create(serialize(data).buffer),
+    JSON.stringify(data),
+    // CryptoJS.lib.WordArray.create(serialize(data).buffer),
     cryptoSecret,
   ).toString();
 }
