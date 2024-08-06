@@ -38,7 +38,7 @@ const messenger = getMessenger({
     const res = await axios.post(
       `${baseURL}/v1/auth/login`,
       {
-        username: 'Umarkhan',
+        username: 'Umarkhan', // Adhamjon, Umarkhan
         password: '123',
       },
       {
@@ -97,7 +97,8 @@ setInterval(async () => {
       title: 'MVD-Qidiruv',
       user: {
         firstName: 'Qumriniso',
-        image: '',
+        image: 'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG',
+        // fullImage: 'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG',
         lastName: 'Qambarov',
         middleName: 'Qulmiddin qizi',
         fullName: 'Qambarov Qumriniso Qulmiddin qizi',
@@ -105,9 +106,9 @@ setInterval(async () => {
         passport: 'AA8432720',
         birthDate: '19.05.1981',
       },
-      car: { carImage: '', carNumber: '01O010OO' },
-      images: [],
-      fullImages: [],
+      car: { carImage: 'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG', carNumber: '01O010OO' },
+      images: ['http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG'],
+      // fullImages: ['http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG'],
       initiator: 'ЖАЛАКУДУКСКИЙ РОВД',
       address: 'Туркистон кўчаси, Dehqon bozori',
       text: `Test xabar ${Math.random() * 100}. Time: ${new Date().toISOString()}`,
@@ -128,7 +129,7 @@ setInterval(async () => {
       objectName: 'Дехқон бозори',
       wantedDate: new Date('07.31.2019').toISOString(),
     };
-    if (random % 2 === 0) {
+    if (random % 3 === 0) {
       wanted.user = null;
       wanted.type = 'car';
     } else {
@@ -146,13 +147,13 @@ setInterval(async () => {
   await messenger
     .sendMessage(message)
     .then((res) => {
-      console.log('Success sended');
+      console.log(res, 'Success sended');
       return res.data;
     })
     .catch((err) => {
       console.log(err, 'err');
     });
-}, 10_000);
+}, 1_000);
 // (async () => {
 //   const updates = await messenger.getUpdates();
 //   console.log(updates);

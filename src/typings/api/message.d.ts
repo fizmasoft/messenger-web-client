@@ -20,6 +20,8 @@ declare namespace ApiMessageManagement {
       fullName: string;
       birthDate: string;
       image: string; // TODO passportnikimi aniqla
+      // thumbnailImage: 'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG';
+      // fullImage: 'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG';
       passport: string;
       pAddress: string; // ! rename
     };
@@ -37,7 +39,8 @@ declare namespace ApiMessageManagement {
     location: [number, number];
 
     images: string[];
-    fullImages: string[];
+    // thumbnailImages: string[];
+    // fullImages: string[];
 
     // isSender: boolean;
     // avatar: string;
