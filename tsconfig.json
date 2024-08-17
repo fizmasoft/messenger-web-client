@@ -10,7 +10,6 @@
     "rootDir": "src",
     "baseUrl": "./",
     "importHelpers": true,
-    "types": ["node"],
     "paths": {
       "src/*": ["src/*"],
       "tslib": [
