@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "emitDecoratorMetadata": true,
-    "target": "ES2021",
-    "module": "CommonJS",
+    "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "node",
     "declaration": true,
-    "declarationDir": "./dist/typings",
-    "outDir": "./dist",
+    "declarationDir": "./build/typings",
+    "outDir": "./build",
     "rootDir": "src",
     "baseUrl": "./",
     "importHelpers": true,
@@ -24,5 +24,5 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*.ts", "src/examples/index.ts"],
-  "exclude": ["node_modules", "**/*.spec.ts", "dist"]
+  "exclude": ["node_modules", "**/*.spec.ts", "build"]
 }

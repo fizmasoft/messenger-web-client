@@ -9,11 +9,12 @@ type RefreshRequestQueue = (config: AxiosRequestConfig) => void;
  * Encapsulate axios request class
  * @author Umar<creativeboy1999@gmail.com>
  */
-export default class CustomAxiosInstance {
+export class CustomAxiosInstance {
   readonly instance: AxiosInstance;
 
   #isRefreshing: boolean;
   #refreshTokenUrl: string;
+  #languageGetter: () => I18nType.LangType;
 
   #retryQueues: RefreshRequestQueue[];
 
@@ -25,15 +26,18 @@ export default class CustomAxiosInstance {
     axiosConfig: AxiosRequestConfig,
     {
       refreshTokenUrl,
+      languageGetter,
     }: {
       refreshTokenUrl?: string;
+      languageGetter: () => I18nType.LangType;
     },
   ) {
+    this.#languageGetter = languageGetter;
     this.instance = axios.create(axiosConfig);
     this.#isRefreshing = false;
     this.#retryQueues = [];
     this.#refreshTokenUrl = refreshTokenUrl;
-    this.setInterceptor();
+    this.#setInterceptor();
   }
 
   async #handleRefreshToken() {
@@ -63,9 +67,11 @@ export default class CustomAxiosInstance {
   }
 
   /** Set request interceptor */
-  private setInterceptor() {
+  #setInterceptor() {
     this.instance.interceptors.request.use(async (config) => {
       const handleConfig = { ...config };
+      handleConfig.headers['x-app-lang'] = (this.#languageGetter() ||
+        'Uz-Latin') as I18nType.LangType; // dynamically fetching language info
 
       if (handleConfig.headers) {
         // Set token
