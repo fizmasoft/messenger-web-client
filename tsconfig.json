@@ -5,7 +5,8 @@
     "module": "ES2015",
     "moduleResolution": "node",
     "declaration": true,
-    "declarationDir": "./typings",
+    // "declarationDir": "./build/typings",
+    "typeRoots": ["./src/typings"],
     "outDir": "./build",
     "rootDir": "src",
     "baseUrl": "./",
@@ -20,7 +21,8 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "experimentalDecorators": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "removeComments": false
   },
   "include": ["src/*.ts", "src/**/*.ts", "src/**/**/*.ts"],
   "exclude": ["node_modules", "**/*.spec.ts", "build"]
