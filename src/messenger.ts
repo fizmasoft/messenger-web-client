@@ -207,6 +207,28 @@ class Messenger {
     return data.data;
   }
 
+  public async sendMessageToArea(
+    filter: {
+      radius: number;
+      right: number;
+      left: number;
+      coordinates: [number, number];
+      polygon: {
+        type: 'Polygon' | 'Point' | 'Polygon' | 'MultiPolygon' | 'LineString';
+        geometry: {
+          type: string;
+          coordinates: number[];
+        };
+        properties: {};
+      };
+    },
+    message: ApiMessageManagement.ISendMessage,
+  ): Promise<Api.MyApiResponse<ApiUserManagement.IUser>> {
+    const { data } = await this.#axiosInstance.post(`v1/users/message`, message);
+
+    return data;
+  }
+
   public async getChatMessages(
     chatId: string,
     { limit = 20, page = 1, search = '' }: { limit?: number; page?: number; search?: string },
