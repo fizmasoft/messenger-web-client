@@ -1,3 +1,6 @@
+import { DefaultEventsMap } from '@socket.io/component-emitter';
+import { Socket } from 'socket.io-client';
+
 export enum DeviceTypesEnum {
   WEB = 'web',
   APP = 'app',
@@ -22,5 +25,10 @@ export type CustomOptions = {
 export interface IEvents {
   update: (data: Messenger.IOnUpdate) => void;
   chatAction: (action: Messenger.IChatAction) => void;
-  connect: () => void;
+  connect: (args: { message: string; socket: Socket<DefaultEventsMap, DefaultEventsMap> }) => void;
+  disconnect: (args: {
+    message: string;
+    socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+  }) => void;
+  socketConnectionError: (args: { message: string; error: Error }) => void;
 }

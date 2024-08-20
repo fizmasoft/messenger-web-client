@@ -21,7 +21,6 @@
     "format": "eslint src/**/*.ts --fix"
   },
   "dependencies": {
-    "ansis": "^3.2.0",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.0",
     "crypto-js": "^4.2.0",

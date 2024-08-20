@@ -708,7 +708,6 @@ function request(opts) {
 }
 
 // src/messenger.ts
-var import_ansis = require("ansis");
 var import_socket = require("socket.io-client");
 var import_uuid2 = require("uuid");
 
@@ -1016,25 +1015,37 @@ var Messenger = class {
         return this;
       }
       return this.socket.connect().on("connect", () => {
-        console.log((0, import_ansis.green)(`Socket successfully connected. socket.id: ${this.socket.id}`));
+        __privateGet(this, _events).connect.map(
+          (cb) => cb({
+            message: `Socket successfully connected. socket.id: ${this.socket.id}`,
+            socket: this.socket
+          })
+        );
       }).on("disconnect", (reason, details) => {
-        console.log(
-          (0, import_ansis.red)(
-            `Socket disconnected: id: ${this.socket.id}, reason: ${reason}, details: ${JSON.stringify(details)}`
-          )
+        __privateGet(this, _events).disconnect.map(
+          (cb) => cb({
+            message: `Socket disconnected: id: ${this.socket.id}, reason: ${reason}, details: ${JSON.stringify(details)}`,
+            socket: this.socket
+          })
         );
       }).on("connect_error", (err) => {
         if (this.socket.active) {
-          console.log((0, import_ansis.red)("temporary failure, the socket will automatically try to reconnect"));
+          __privateGet(this, _events).socketConnectionError.map(
+            (cb) => cb({
+              message: "temporary failure, the socket will automatically try to reconnect",
+              error: err
+            })
+          );
         } else {
-          console.log(
-            (0, import_ansis.red)(
-              `
+          __privateGet(this, _events).socketConnectionError.map(
+            (cb) => cb({
+              message: `
                 the connection was denied by the server
                 in that case, socket.connect() must be manually called in order to reconnect.
                 Error: ${err.message}
-              `
-            )
+              `,
+              error: err
+            })
           );
         }
       });

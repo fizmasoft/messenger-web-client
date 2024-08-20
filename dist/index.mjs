@@ -686,7 +686,6 @@ function request(opts) {
 }
 
 // src/messenger.ts
-import { green, red } from "ansis";
 import { io } from "socket.io-client";
 import { v1 as uuidV12 } from "uuid";
 
@@ -994,25 +993,37 @@ var Messenger = class {
         return this;
       }
       return this.socket.connect().on("connect", () => {
-        console.log(green(`Socket successfully connected. socket.id: ${this.socket.id}`));
+        __privateGet(this, _events).connect.map(
+          (cb) => cb({
+            message: `Socket successfully connected. socket.id: ${this.socket.id}`,
+            socket: this.socket
+          })
+        );
       }).on("disconnect", (reason, details) => {
-        console.log(
-          red(
-            `Socket disconnected: id: ${this.socket.id}, reason: ${reason}, details: ${JSON.stringify(details)}`
-          )
+        __privateGet(this, _events).disconnect.map(
+          (cb) => cb({
+            message: `Socket disconnected: id: ${this.socket.id}, reason: ${reason}, details: ${JSON.stringify(details)}`,
+            socket: this.socket
+          })
         );
       }).on("connect_error", (err) => {
         if (this.socket.active) {
-          console.log(red("temporary failure, the socket will automatically try to reconnect"));
+          __privateGet(this, _events).socketConnectionError.map(
+            (cb) => cb({
+              message: "temporary failure, the socket will automatically try to reconnect",
+              error: err
+            })
+          );
         } else {
-          console.log(
-            red(
-              `
+          __privateGet(this, _events).socketConnectionError.map(
+            (cb) => cb({
+              message: `
                 the connection was denied by the server
                 in that case, socket.connect() must be manually called in order to reconnect.
                 Error: ${err.message}
-              `
-            )
+              `,
+              error: err
+            })
           );
         }
       });

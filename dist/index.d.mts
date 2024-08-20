@@ -1,6 +1,6 @@
 import FormData from 'form-data';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
-import { ManagerOptions, SocketOptions, Socket } from 'socket.io-client';
+import { Socket, ManagerOptions, SocketOptions } from 'socket.io-client';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 
 declare const ENV: {
@@ -76,7 +76,18 @@ type CustomOptions = {
 interface IEvents {
     update: (data: Messenger.IOnUpdate) => void;
     chatAction: (action: Messenger.IChatAction) => void;
-    connect: () => void;
+    connect: (args: {
+        message: string;
+        socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    }) => void;
+    disconnect: (args: {
+        message: string;
+        socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    }) => void;
+    socketConnectionError: (args: {
+        message: string;
+        error: Error;
+    }) => void;
 }
 
 declare class Messenger$1 {
@@ -92,7 +103,7 @@ declare class Messenger$1 {
     } | (() => Promise<{
         access: string;
         refresh: string;
-    }>)): Promise<this | Socket<DefaultEventsMap, DefaultEventsMap>>;
+    }>)): Promise<Socket<DefaultEventsMap, DefaultEventsMap> | this>;
     on<Ev extends string = keyof IEvents>(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
     /**
      *
