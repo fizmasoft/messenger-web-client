@@ -204,7 +204,7 @@ class Messenger {
    */
   public async searchUser(search: string): Promise<Api.MyApiResponse<ApiUserManagement.IUser>> {
     const data = await this.#axiosInstance.get<Api.MyApiResponse<ApiUserManagement.IUser>>(
-      `v1/users?search=${search}`,
+      `/v1/users?search=${search}`,
     );
 
     return data.data;
@@ -213,7 +213,7 @@ class Messenger {
   public async sendMessage(
     message: ApiMessageManagement.ISendMessage,
   ): Promise<Api.MyApiResponse<ApiUserManagement.IUser>> {
-    const data = await this.#axiosInstance.post(`v1/chats/${message.to.chatId}/messages`, message);
+    const data = await this.#axiosInstance.post(`/v1/chats/${message.to.chatId}/messages`, message);
 
     return data.data;
   }
@@ -235,7 +235,7 @@ class Messenger {
     },
     message: ApiMessageManagement.ISendMessage,
   ): Promise<Api.MyApiResponse<ApiUserManagement.IUser>> {
-    const { data } = await this.#axiosInstance.post(`v1/users/message`, message);
+    const { data } = await this.#axiosInstance.post(`/v1/users/message`, message);
 
     return data;
   }
@@ -250,7 +250,7 @@ class Messenger {
   ): Promise<Api.MyApiResponse<ApiMessageManagement.IMessage>> {
     const { data } = await this.#axiosInstance.get<
       Api.MyApiResponse<ApiMessageManagement.IMessage>
-    >(`v1/chats/${chatId}?search=${search}&limit=${limit}&page=${page}`);
+    >(`/v1/chats/${chatId}?search=${search}&limit=${limit}&page=${page}`);
 
     return data;
   }
@@ -336,7 +336,7 @@ class Messenger {
     } = { limit: 20, page: 1, type: null },
   ) {
     const data = await this.#axiosInstance.get(
-      `v1/chats?limit=${limit}&page=${page}${type ? `&type=${type}` : ''}`,
+      `/v1/chats?limit=${limit}&page=${page}${type ? `&type=${type}` : ''}`,
     );
 
     return data.data;
