@@ -147,6 +147,8 @@ class Messenger {
       .on('disconnect', (reason, details) => {
         this.#events.disconnect.map((cb) =>
           cb({
+            reason,
+            details,
             message: `Socket disconnected: id: ${
               this.socket.id
             }, reason: ${reason}, details: ${JSON.stringify(details)}`,
@@ -202,7 +204,7 @@ class Messenger {
    */
   public async searchUser(search: string): Promise<Api.MyApiResponse<ApiUserManagement.IUser>> {
     const data = await this.#axiosInstance.get<Api.MyApiResponse<ApiUserManagement.IUser>>(
-      `/users?search=${search}`,
+      `v1/users?search=${search}`,
     );
 
     return data.data;
@@ -240,11 +242,15 @@ class Messenger {
 
   public async getChatMessages(
     chatId: string,
-    { limit = 20, page = 1, search = '' }: { limit?: number; page?: number; search?: string },
+    { limit = 20, page = 1, search = '' }: { limit?: number; page?: number; search?: string } = {
+      limit: 20,
+      page: 1,
+      search: '',
+    },
   ): Promise<Api.MyApiResponse<ApiMessageManagement.IMessage>> {
     const { data } = await this.#axiosInstance.get<
       Api.MyApiResponse<ApiMessageManagement.IMessage>
-    >(`/chats/${chatId}?search=${search}&limit=${limit}&page=${page}`);
+    >(`v1/chats/${chatId}?search=${search}&limit=${limit}&page=${page}`);
 
     return data;
   }
@@ -257,21 +263,21 @@ class Messenger {
 
   public async getChatMedia(
     chatId: string,
-    { limit = 20, page = 1 }: { limit?: number; page?: number },
+    { limit = 20, page = 1 }: { limit?: number; page?: number } = { limit: 20, page: 1 },
   ): Promise<unknown> {
     return {};
   }
 
   public async getChatFiles(
     chatId: string,
-    { limit = 20, page = 1 }: { limit?: number; page?: number },
+    { limit = 20, page = 1 }: { limit?: number; page?: number } = { limit: 20, page: 1 },
   ): Promise<unknown> {
     return [];
   }
 
   public async getChatAudios(
     chatId: string,
-    { limit = 20, page = 1 }: { limit?: number; page?: number },
+    { limit = 20, page = 1 }: { limit?: number; page?: number } = { limit: 20, page: 1 },
   ): Promise<unknown> {
     return [];
   }
@@ -318,17 +324,19 @@ class Messenger {
     return []; // kim qachon o'qidi...
   }
 
-  public async getChats({
-    limit = 100,
-    page = 1,
-    type = 'private',
-  }: {
-    limit?: number;
-    page?: number;
-    type?: Messenger.ChatType;
-  }) {
+  public async getChats(
+    {
+      limit = 100,
+      page = 1,
+      type = null,
+    }: {
+      limit?: number;
+      page?: number;
+      type?: Messenger.ChatType;
+    } = { limit: 20, page: 1, type: null },
+  ) {
     const data = await this.#axiosInstance.get(
-      `/chats?limit=${limit}&page=${page}${type ? `&type=${type}` : ''}`,
+      `v1/chats?limit=${limit}&page=${page}${type ? `&type=${type}` : ''}`,
     );
 
     return data.data;

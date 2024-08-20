@@ -1002,6 +1002,8 @@ var Messenger = class {
       }).on("disconnect", (reason, details) => {
         __privateGet(this, _events).disconnect.map(
           (cb) => cb({
+            reason,
+            details,
             message: `Socket disconnected: id: ${this.socket.id}, reason: ${reason}, details: ${JSON.stringify(details)}`,
             socket: this.socket
           })
@@ -1048,7 +1050,7 @@ var Messenger = class {
   searchUser(search) {
     return __async(this, null, function* () {
       const data = yield __privateGet(this, _axiosInstance).get(
-        `/users?search=${search}`
+        `v1/users?search=${search}`
       );
       return data.data;
     });
@@ -1065,9 +1067,13 @@ var Messenger = class {
       return data;
     });
   }
-  getChatMessages(_0, _1) {
-    return __async(this, arguments, function* (chatId, { limit = 20, page = 1, search = "" }) {
-      const { data } = yield __privateGet(this, _axiosInstance).get(`/chats/${chatId}?search=${search}&limit=${limit}&page=${page}`);
+  getChatMessages(_0) {
+    return __async(this, arguments, function* (chatId, { limit = 20, page = 1, search = "" } = {
+      limit: 20,
+      page: 1,
+      search: ""
+    }) {
+      const { data } = yield __privateGet(this, _axiosInstance).get(`v1/chats/${chatId}?search=${search}&limit=${limit}&page=${page}`);
       return data;
     });
   }
@@ -1077,18 +1083,18 @@ var Messenger = class {
       return data;
     });
   }
-  getChatMedia(_0, _1) {
-    return __async(this, arguments, function* (chatId, { limit = 20, page = 1 }) {
+  getChatMedia(_0) {
+    return __async(this, arguments, function* (chatId, { limit = 20, page = 1 } = { limit: 20, page: 1 }) {
       return {};
     });
   }
-  getChatFiles(_0, _1) {
-    return __async(this, arguments, function* (chatId, { limit = 20, page = 1 }) {
+  getChatFiles(_0) {
+    return __async(this, arguments, function* (chatId, { limit = 20, page = 1 } = { limit: 20, page: 1 }) {
       return [];
     });
   }
-  getChatAudios(_0, _1) {
-    return __async(this, arguments, function* (chatId, { limit = 20, page = 1 }) {
+  getChatAudios(_0) {
+    return __async(this, arguments, function* (chatId, { limit = 20, page = 1 } = { limit: 20, page: 1 }) {
       return [];
     });
   }
@@ -1123,14 +1129,14 @@ var Messenger = class {
   updateMessages(messages) {
     return [];
   }
-  getChats(_0) {
+  getChats() {
     return __async(this, arguments, function* ({
       limit = 100,
       page = 1,
-      type = "private"
-    }) {
+      type = null
+    } = { limit: 20, page: 1, type: null }) {
       const data = yield __privateGet(this, _axiosInstance).get(
-        `/chats?limit=${limit}&page=${page}${type ? `&type=${type}` : ""}`
+        `v1/chats?limit=${limit}&page=${page}${type ? `&type=${type}` : ""}`
       );
       return data.data;
     });

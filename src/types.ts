@@ -1,5 +1,6 @@
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { Socket } from 'socket.io-client';
+import { DisconnectDescription } from 'socket.io-client/build/esm/socket';
 
 export enum DeviceTypesEnum {
   WEB = 'web',
@@ -27,6 +28,8 @@ export interface IEvents {
   chatAction: (action: Messenger.IChatAction) => void;
   connect: (args: { message: string; socket: Socket<DefaultEventsMap, DefaultEventsMap> }) => void;
   disconnect: (args: {
+    reason: Socket.DisconnectReason;
+    details: DisconnectDescription;
     message: string;
     socket: Socket<DefaultEventsMap, DefaultEventsMap>;
   }) => void;

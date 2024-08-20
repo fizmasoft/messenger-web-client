@@ -82,7 +82,7 @@ messenger
   .on('reconnect', (...args) => {
     console.log('reconnect', args);
   })
-  .on('disconnect', (reason, details) => {
+  .on('disconnect', ({reason, details}) => {
     console.log('disconnect', reason);
   })
   .on('pong', () => {

@@ -1,6 +1,7 @@
 import FormData from 'form-data';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { Socket, ManagerOptions, SocketOptions } from 'socket.io-client';
+import { DisconnectDescription } from 'socket.io-client/build/esm/socket';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 
 declare const ENV: {
@@ -81,6 +82,8 @@ interface IEvents {
         socket: Socket<DefaultEventsMap, DefaultEventsMap>;
     }) => void;
     disconnect: (args: {
+        reason: Socket.DisconnectReason;
+        details: DisconnectDescription;
         message: string;
         socket: Socket<DefaultEventsMap, DefaultEventsMap>;
     }) => void;
@@ -126,21 +129,21 @@ declare class Messenger$1 {
             properties: {};
         };
     }, message: ApiMessageManagement.ISendMessage): Promise<Api.MyApiResponse<ApiUserManagement.IUser>>;
-    getChatMessages(chatId: string, { limit, page, search }: {
+    getChatMessages(chatId: string, { limit, page, search }?: {
         limit?: number;
         page?: number;
         search?: string;
     }): Promise<Api.MyApiResponse<ApiMessageManagement.IMessage>>;
     getChatInfo(chatId: string): Promise<unknown>;
-    getChatMedia(chatId: string, { limit, page }: {
+    getChatMedia(chatId: string, { limit, page }?: {
         limit?: number;
         page?: number;
     }): Promise<unknown>;
-    getChatFiles(chatId: string, { limit, page }: {
+    getChatFiles(chatId: string, { limit, page }?: {
         limit?: number;
         page?: number;
     }): Promise<unknown>;
-    getChatAudios(chatId: string, { limit, page }: {
+    getChatAudios(chatId: string, { limit, page }?: {
         limit?: number;
         page?: number;
     }): Promise<unknown>;
@@ -153,7 +156,7 @@ declare class Messenger$1 {
         meta: any;
     }>;
     updateMessages(messages: []): any[];
-    getChats({ limit, page, type, }: {
+    getChats({ limit, page, type, }?: {
         limit?: number;
         page?: number;
         type?: Messenger$1.ChatType;
