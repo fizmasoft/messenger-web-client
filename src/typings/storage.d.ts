@@ -22,18 +22,18 @@ declare namespace StorageInterface {
 
   /** The type of data stored in localStorage */
   interface ILocal {
-    uid: string;
+    messengerDeviceUid: string;
     /** user token */
-    token: {
+    messengerToken: {
       /** User access token */
       access: string;
       /** User refresh token */
       refresh: string;
     };
     /** User Info */
-    userInfo: IUser;
+    // userInfo: IUser;
 
-    multiTabRoutes: any[];
+    // multiTabRoutes: any[];
     // multiTabRoutes: App.GlobalTabRoute[]
     // /** Multi-tab routing information */
     // multiTabRoutes: App.GlobalTabRoute[];

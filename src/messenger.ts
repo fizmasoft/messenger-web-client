@@ -7,9 +7,9 @@ import { ENV } from './common/config';
 import { CustomOptions, DeviceTypesEnum, IEvents, IPollingOptions } from './types';
 import { CustomAxiosInstance, localStg } from './utils';
 
-const localUid = localStg.get('uid');
+const localUid = localStg.get('messengerDeviceUid');
 const uid = localUid ? localUid : uuidV1();
-localStg.set('uid', uid);
+localStg.set('messengerDeviceUid', uid);
 
 let appVersion = '0.0.0';
 
@@ -127,7 +127,7 @@ class Messenger {
     } else {
       this.#token = token;
     }
-    localStg.set('token', this.#token);
+    localStg.set('messengerToken', this.#token);
 
     if (this.#polling) {
       this.initPolling();

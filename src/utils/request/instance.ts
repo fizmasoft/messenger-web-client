@@ -45,7 +45,7 @@ export class CustomAxiosInstance {
       .create(this.instance.defaults)
       .get<ApiAuth.IUserLogin>(this.#refreshTokenUrl);
     if (data && data.token) {
-      localStg.set('token', { access: data.token.accessToken, refresh: data.token.refreshToken });
+      localStg.set('messengerToken', { access: data.token.accessToken, refresh: data.token.refreshToken });
     }
 
     return data.token.accessToken;
@@ -75,7 +75,7 @@ export class CustomAxiosInstance {
 
       if (handleConfig.headers) {
         // Set token
-        handleConfig.headers.Authorization = `Bearer ${localStg.get('token')?.access || ''}`;
+        handleConfig.headers.Authorization = `Bearer ${localStg.get('messengerToken')?.access || ''}`;
       }
 
       return handleConfig;

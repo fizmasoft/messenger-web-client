@@ -5,9 +5,9 @@ import { getMessenger } from '../index';
 import { localStg } from '../utils';
 
 const baseURL = 'http://localhost:7000';
-const localUid = localStg.get('uid');
+const localUid = localStg.get('messengerDeviceUid');
 const uid = localUid ? localUid : uuidV1();
-localStg.set('uid', uid);
+localStg.set('messengerDeviceUid', uid);
 
 const chatId = '66b9a4edf5a564cae64892c3'; // ! rm
 
