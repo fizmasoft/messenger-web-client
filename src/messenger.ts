@@ -250,7 +250,7 @@ class Messenger {
   ): Promise<Api.MyApiResponse<ApiMessageManagement.IMessage>> {
     const { data } = await this.#axiosInstance.get<
       Api.MyApiResponse<ApiMessageManagement.IMessage>
-    >(`/v1/chats/${chatId}?search=${search}&limit=${limit}&page=${page}`);
+    >(`/v1/chats/${chatId}/messages?search=${search}&limit=${limit}&page=${page}`);
 
     return data;
   }
