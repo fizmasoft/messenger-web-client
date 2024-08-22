@@ -1,20 +1,26 @@
-Date.prototype.toFormatted = function () {
+export function formatDate(date: Date): IFormattedDate {
   const locale = 'uz-UZ';
 
   return {
-    original: this,
-    iso: this.toISOString(),
-    time: this.toLocaleString(locale, {
+    date: date,
+    iso: date.toISOString(),
+    hh_mm: date.toLocaleString(locale, {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
     }),
-    date: this.toLocaleString(locale, {
+    hh_mm_ss: date.toLocaleString(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }),
+    YYYY_MM_DD: date.toLocaleString(locale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
-    }).replace(/\//g, '.'),
-    formatted: this.toLocaleString(locale, {
+    }),
+    YYYY_MM_DD_hh_mm_ss: date.toLocaleString(locale, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -22,21 +28,24 @@ Date.prototype.toFormatted = function () {
       minute: '2-digit',
       second: '2-digit',
       hour12: false,
-    })
-      .replace(/\//g, '-')
-      .replace(/\,/g, ''),
+    }),
   };
+}
+
+Date.prototype.toFormatted = function () {
+  return formatDate(this as Date);
 };
 
-export {};
+export { };
 
 declare global {
   interface IFormattedDate {
-    original: string;
+    date: Date;
     iso: string;
-    time: string;
-    date: string;
-    formatted: string;
+    hh_mm: string;
+    hh_mm_ss: string;
+    YYYY_MM_DD: string;
+    YYYY_MM_DD_hh_mm_ss: string;
   }
 
   interface Date {

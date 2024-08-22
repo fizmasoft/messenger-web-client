@@ -1,6 +1,8 @@
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { Socket } from 'socket.io-client';
 import { DisconnectDescription } from 'socket.io-client/build/esm/socket';
+import { IChatAction, IOnUpdate } from './api/message.types';
+import { LangType } from './system';
 
 export enum DeviceTypesEnum {
   WEB = 'web',
@@ -19,13 +21,13 @@ export type CustomOptions = {
   apiHash: string;
   polling?: IPollingOptions;
   token: { access: string; refresh: string } | (() => Promise<{ access: string; refresh: string }>);
-  languageGetter?: () => I18nType.LangType;
+  languageGetter?: () => LangType;
   headers?: Record<string, string>;
 };
 
 export interface IEvents {
-  update: (data: Messenger.IOnUpdate) => void;
-  chatAction: (action: Messenger.IChatAction) => void;
+  update: (data: IOnUpdate) => void;
+  chatAction: (action: IChatAction) => void;
   connect: (args: { message: string; socket: Socket<DefaultEventsMap, DefaultEventsMap> }) => void;
   disconnect: (args: {
     reason: Socket.DisconnectReason;

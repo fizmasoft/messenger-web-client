@@ -3,6 +3,8 @@ import { v1 as uuidV1 } from 'uuid';
 // import { ENV } from '../common/config';
 import { getMessenger } from '../index';
 import { localStg } from '../utils';
+import { IOnUpdate } from '../types/api/message.types';
+import { IChatMessageWanted, ISendMessage } from '../types/api/message';
 
 const baseURL = 'http://localhost:7000';
 const localUid = localStg.get('messengerDeviceUid');
@@ -82,13 +84,13 @@ messenger
   .on('reconnect', (...args) => {
     console.log('reconnect', args);
   })
-  .on('disconnect', ({reason, details}) => {
+  .on('disconnect', ({ reason, details }) => {
     console.log('disconnect', reason);
   })
   .on('pong', () => {
     console.log('pong');
   })
-  .on('update', (data: Messenger.IOnUpdate) => {
+  .on('update', (data: IOnUpdate) => {
     console.log(data._id, 'update');
   })
   .on('chatAction', (action) => {
@@ -98,7 +100,7 @@ messenger
 const getRadomNumber = (from: number, to: number) => from + Math.round(Math.random() * (to - from));
 
 setInterval(async () => {
-  let message: ApiMessageManagement.ISendMessage;
+  let message: ISendMessage;
   const random = getRadomNumber(0, 100);
   // const random = 3;
   if (random % 2 === 0) {
@@ -108,7 +110,7 @@ setInterval(async () => {
       text: `Test xabar ${Math.random() * 100}. Time: ${new Date().toISOString()}`,
     };
   } else {
-    const wanted: ApiMessageManagement.IChatMessageWanted = {
+    const wanted: IChatMessageWanted = {
       type: 'user',
       title: 'MVD-Qidiruv',
       user: {

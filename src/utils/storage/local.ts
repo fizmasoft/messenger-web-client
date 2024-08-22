@@ -1,4 +1,5 @@
 import { ENV } from '../../common/config';
+import { ILocalStorage } from '../../types/storage';
 import { decrypt, encrypt } from '../crypto';
 
 interface StorageData<T> {
@@ -35,7 +36,7 @@ if (ENV.isBrowser) {
   };
 }
 
-function createLocalStorage<T extends StorageInterface.ILocal = StorageInterface.ILocal>() {
+function createLocalStorage<T extends ILocalStorage = ILocalStorage>() {
   /** The default cache period is 7 days */
   const DEFAULT_CACHE_TIME = 60 * 60 * 24 * 7;
 
@@ -90,4 +91,4 @@ function createLocalStorage<T extends StorageInterface.ILocal = StorageInterface
   };
 }
 
-export const localStg = createLocalStorage<StorageInterface.ILocal>();
+export const localStg = createLocalStorage<ILocalStorage>();

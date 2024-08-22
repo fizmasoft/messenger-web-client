@@ -55,6 +55,105 @@ interface MyHttpRequestOptions {
 }
 declare function request(opts: MyHttpRequestOptions): Promise<unknown>;
 
+type ChatType = 'private' | 'group' | 'channel' | 'bot';
+interface IChat {
+    _id: string;
+    title: string;
+    photo: string;
+    lastMessage: string;
+    lastMessageCreatedAt: string;
+    lastMessageIsRead: boolean;
+    senderIsMe: boolean;
+    isOnline: boolean;
+    unreadMessageCount: number;
+}
+
+type MessageType = 'text' | 'wanted' | 'audio' | 'photo' | 'gif' | 'video' | 'mediaGroup' | 'documentGroup' | 'document' | 'location' | 'liveLocation';
+interface IOnUpdate {
+    _id: string;
+    from: {
+        firstName: string;
+        lastName: string;
+        username: string | null;
+        fullName: string;
+    };
+    message: IMessage;
+}
+declare enum ChatACtion {
+    TYPING = "typing",
+    SENDING_FILE = "sending_file",
+    SENDING_PHOTO = "sending_photo",
+    SENDING_VIDEO = "sending_video"
+}
+interface IChatAction {
+    chatId: string;
+    action: ChatACtion;
+}
+
+interface IMessageTo {
+    chatId: string;
+    chatType: 'group' | 'private';
+}
+interface IChatMessageWanted {
+    type: 'user' | 'car';
+    title: string;
+    sender: {
+        firstName: string;
+        lastName: string;
+        middleName: string;
+        fullName: string;
+    };
+    user?: {
+        firstName: string;
+        lastName: string;
+        middleName: string;
+        fullName: string;
+        birthDate: string;
+        image: string;
+        passport: string;
+        pAddress: string;
+    };
+    car?: {
+        carImage: string;
+        carNumber: string;
+    };
+    initiator: string;
+    address: string;
+    objectName: string;
+    wantedDate: string;
+    statya: string;
+    rozType: string;
+    mera: string;
+    location: [number, number];
+    images: string[];
+    text: string;
+    region: string;
+}
+interface ISendMessage {
+    messageType: MessageType;
+    to: IMessageTo;
+    text?: string;
+    wanted?: IChatMessageWanted;
+}
+interface IMessage {
+    messageType: MessageType;
+    from: IMessageTo;
+    to: IMessageTo;
+    text?: string;
+    wanted?: IChatMessageWanted;
+}
+
+interface IUser {
+    _id: string;
+    fullName: string;
+    surname: string;
+    birthday: string;
+    image: null;
+    status: string;
+}
+
+type LangType = 'Uz-Latin' | 'Uz-Cyrl' | 'ru';
+
 interface IPollingOptions {
     limit: number;
     interval: number;
@@ -71,12 +170,12 @@ type CustomOptions = {
         access: string;
         refresh: string;
     }>);
-    languageGetter?: () => I18nType.LangType;
+    languageGetter?: () => LangType;
     headers?: Record<string, string>;
 };
 interface IEvents {
-    update: (data: Messenger.IOnUpdate) => void;
-    chatAction: (action: Messenger.IChatAction) => void;
+    update: (data: IOnUpdate) => void;
+    chatAction: (action: IChatAction) => void;
     connect: (args: {
         message: string;
         socket: Socket<DefaultEventsMap, DefaultEventsMap>;
@@ -93,7 +192,37 @@ interface IEvents {
     }) => void;
 }
 
-declare class Messenger$1 {
+type SuccessResponseData<T> = {
+    message: string;
+} | T | T[];
+type FailResponseData = string[];
+interface IMetaData {
+    limit: number;
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+}
+interface ISuccessResponse<T> {
+    data: SuccessResponseData<T>;
+    meta: IMetaData;
+    code: number;
+    message: string;
+    success: true;
+    time: string;
+    requestId: string;
+}
+interface IFailResponse {
+    message: string;
+    data: FailResponseData;
+    meta: IMetaData;
+    code: number;
+    success: false;
+    time: string;
+    requestId: string;
+}
+type MyApiResponse<T = unknown> = ISuccessResponse<T> | IFailResponse;
+
+declare class Messenger {
     #private;
     uid: string;
     readonly socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
@@ -113,8 +242,8 @@ declare class Messenger$1 {
      * @param search id or username
      * @returns {[]}
      */
-    searchUser(search: string): Promise<Api.MyApiResponse<ApiUserManagement.IUser>>;
-    sendMessage(message: ApiMessageManagement.ISendMessage): Promise<Api.MyApiResponse<ApiUserManagement.IUser>>;
+    searchUser(search: string): Promise<MyApiResponse<IUser>>;
+    sendMessage(message: ISendMessage): Promise<MyApiResponse<IUser>>;
     sendMessageToArea(filter: {
         radius: number;
         right: number;
@@ -128,12 +257,12 @@ declare class Messenger$1 {
             };
             properties: {};
         };
-    }, message: ApiMessageManagement.ISendMessage): Promise<Api.MyApiResponse<ApiUserManagement.IUser>>;
+    }, message: ISendMessage): Promise<MyApiResponse<IUser>>;
     getChatMessages(chatId: string, { limit, page, search }?: {
         limit?: number;
         page?: number;
         search?: string;
-    }): Promise<Api.MyApiResponse<ApiMessageManagement.IMessage>>;
+    }): Promise<MyApiResponse<IMessage>>;
     getChatInfo(chatId: string): Promise<unknown>;
     getChatMedia(chatId: string, { limit, page }?: {
         limit?: number;
@@ -150,20 +279,20 @@ declare class Messenger$1 {
     getUpdates({ limit, page, allowedUpdates, }?: {
         limit?: number;
         page?: number;
-        allowedUpdates?: Messenger$1.MessageType[];
+        allowedUpdates?: MessageType[];
     }): Promise<{
-        updates: Messenger$1.IOnUpdate[];
+        updates: IOnUpdate[];
         meta: any;
     }>;
     updateMessages(messages: []): any[];
     getChats({ limit, page, type, }?: {
         limit?: number;
         page?: number;
-        type?: Messenger$1.ChatType;
-    }): Promise<any>;
+        type?: ChatType;
+    }): Promise<MyApiResponse<IChat>>;
     ping(): void;
 }
-declare function getMessenger(customOptions: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>): Messenger$1;
+declare function getMessenger(customOptions: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>): Messenger;
 
 /**
  * Encrypt data
@@ -189,21 +318,34 @@ declare class CustomAxiosInstance {
      */
     constructor(axiosConfig: AxiosRequestConfig, { refreshTokenUrl, languageGetter, }: {
         refreshTokenUrl?: string;
-        languageGetter: () => I18nType.LangType;
+        languageGetter: () => LangType;
     });
 }
 
+/** The type of data stored in localStorage */
+interface ILocalStorage {
+    /** device unique id */
+    messengerDeviceUid: string;
+    /** user token */
+    messengerToken: {
+        /** User access token */
+        access: string;
+        /** User refresh token */
+        refresh: string;
+    };
+}
+
 declare const localStg: {
-    set: <K extends keyof StorageInterface.ILocal>(key: K, value: StorageInterface.ILocal[K], expire?: number | null) => void;
-    get: <K extends keyof StorageInterface.ILocal>(key: K) => StorageInterface.ILocal[K];
-    remove: (key: keyof StorageInterface.ILocal) => void;
+    set: <K extends keyof ILocalStorage>(key: K, value: ILocalStorage[K], expire?: number | null) => void;
+    get: <K extends keyof ILocalStorage>(key: K) => ILocalStorage[K];
+    remove: (key: keyof ILocalStorage) => void;
     clear: () => void;
 };
 
 declare const sessionStg: {
-    set: <K extends "themeColor">(key: K, value: StorageInterface.Session[K]) => void;
-    get: <K extends "themeColor">(key: K) => StorageInterface.Session[K];
-    remove: (key: "themeColor") => void;
+    set: <K extends "sessionStorage">(key: K, value: WindowSessionStorage[K]) => void;
+    get: <K extends "sessionStorage">(key: K) => WindowSessionStorage[K];
+    remove: (key: "sessionStorage") => void;
     clear: () => void;
 };
 

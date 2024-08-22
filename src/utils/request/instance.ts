@@ -2,6 +2,8 @@ import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } fro
 import axios from 'axios';
 import { localStg } from '../';
 import { RESPONSE_CODES } from '../../common/constant';
+import { IUserLogin } from '../../types/api/auth';
+import { LangType } from '../../types/system';
 
 type RefreshRequestQueue = (config: AxiosRequestConfig) => void;
 
@@ -14,7 +16,7 @@ export class CustomAxiosInstance {
 
   #isRefreshing: boolean;
   #refreshTokenUrl: string;
-  #languageGetter: () => I18nType.LangType;
+  #languageGetter: () => LangType;
 
   #retryQueues: RefreshRequestQueue[];
 
@@ -29,7 +31,7 @@ export class CustomAxiosInstance {
       languageGetter,
     }: {
       refreshTokenUrl?: string;
-      languageGetter: () => I18nType.LangType;
+      languageGetter: () => LangType;
     },
   ) {
     this.#languageGetter = languageGetter;
@@ -43,9 +45,12 @@ export class CustomAxiosInstance {
   async #handleRefreshToken() {
     const { data } = await axios
       .create(this.instance.defaults)
-      .get<ApiAuth.IUserLogin>(this.#refreshTokenUrl);
+      .get<IUserLogin>(this.#refreshTokenUrl);
     if (data && data.token) {
-      localStg.set('messengerToken', { access: data.token.accessToken, refresh: data.token.refreshToken });
+      localStg.set('messengerToken', {
+        access: data.token.accessToken,
+        refresh: data.token.refreshToken,
+      });
     }
 
     return data.token.accessToken;
@@ -70,12 +75,13 @@ export class CustomAxiosInstance {
   #setInterceptor() {
     this.instance.interceptors.request.use(async (config) => {
       const handleConfig = { ...config };
-      handleConfig.headers['x-app-lang'] = (this.#languageGetter() ||
-        'Uz-Latin') as I18nType.LangType; // dynamically fetching language info
+      handleConfig.headers['x-app-lang'] = (this.#languageGetter() || 'Uz-Latin') as LangType; // dynamically fetching language info
 
       if (handleConfig.headers) {
         // Set token
-        handleConfig.headers.Authorization = `Bearer ${localStg.get('messengerToken')?.access || ''}`;
+        handleConfig.headers.Authorization = `Bearer ${
+          localStg.get('messengerToken')?.access || ''
+        }`;
       }
 
       return handleConfig;

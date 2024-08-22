@@ -4,8 +4,13 @@ import type { ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
 import { io } from 'socket.io-client';
 import { v1 as uuidV1 } from 'uuid';
 import { ENV } from './common/config';
-import { CustomOptions, DeviceTypesEnum, IEvents, IPollingOptions } from './types';
+import { ChatType, IChat } from './types/api/chat';
+import { IMessage, ISendMessage } from './types/api/message';
+import { IOnUpdate, MessageType } from './types/api/message.types';
+import { IUser } from './types/api/user';
+import { CustomOptions, DeviceTypesEnum, IEvents, IPollingOptions } from './types/types';
 import { CustomAxiosInstance, localStg } from './utils';
+import { MyApiResponse } from './types/api';
 
 const localUid = localStg.get('messengerDeviceUid');
 const uid = localUid ? localUid : uuidV1();
@@ -131,6 +136,12 @@ class Messenger {
 
     if (this.#polling) {
       this.initPolling();
+      this.#events.connect.map((cb) =>
+        cb({
+          message: `Polling successfully connected`,
+          socket: this.socket,
+        }),
+      );
       return this;
     }
 
@@ -183,7 +194,7 @@ class Messenger {
     event: Ev,
     cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void,
   ): this;
-  on<Ev extends string = keyof IEvents>(event: Ev, cb: (data: Messenger.IOnUpdate) => void): this {
+  on<Ev extends string = keyof IEvents>(event: Ev, cb: (data: IOnUpdate) => void): this {
     if (this.#events[event as keyof IEvents]) {
       this.#events[event as keyof IEvents].push(cb);
     } else {
@@ -202,17 +213,13 @@ class Messenger {
    * @param search id or username
    * @returns {[]}
    */
-  public async searchUser(search: string): Promise<Api.MyApiResponse<ApiUserManagement.IUser>> {
-    const data = await this.#axiosInstance.get<Api.MyApiResponse<ApiUserManagement.IUser>>(
-      `/v1/users?search=${search}`,
-    );
+  public async searchUser(search: string): Promise<MyApiResponse<IUser>> {
+    const data = await this.#axiosInstance.get<MyApiResponse<IUser>>(`/v1/users?search=${search}`);
 
     return data.data;
   }
 
-  public async sendMessage(
-    message: ApiMessageManagement.ISendMessage,
-  ): Promise<Api.MyApiResponse<ApiUserManagement.IUser>> {
+  public async sendMessage(message: ISendMessage): Promise<MyApiResponse<IUser>> {
     const data = await this.#axiosInstance.post(`/v1/chats/${message.to.chatId}/messages`, message);
 
     return data.data;
@@ -233,8 +240,8 @@ class Messenger {
         properties: {};
       };
     },
-    message: ApiMessageManagement.ISendMessage,
-  ): Promise<Api.MyApiResponse<ApiUserManagement.IUser>> {
+    message: ISendMessage,
+  ): Promise<MyApiResponse<IUser>> {
     const { data } = await this.#axiosInstance.post(`/v1/users/message`, message);
 
     return data;
@@ -247,16 +254,16 @@ class Messenger {
       page: 1,
       search: '',
     },
-  ): Promise<Api.MyApiResponse<ApiMessageManagement.IMessage>> {
-    const { data } = await this.#axiosInstance.get<
-      Api.MyApiResponse<ApiMessageManagement.IMessage>
-    >(`/v1/chats/${chatId}/messages?search=${search}&limit=${limit}&page=${page}`);
+  ): Promise<MyApiResponse<IMessage>> {
+    const { data } = await this.#axiosInstance.get<MyApiResponse<IMessage>>(
+      `/v1/chats/${chatId}/messages?search=${search}&limit=${limit}&page=${page}`,
+    );
 
     return data;
   }
 
   public async getChatInfo(chatId: string): Promise<unknown> {
-    const { data } = await this.#axiosInstance.get(`/chats/${chatId}`);
+    const { data } = await this.#axiosInstance.get(`/v1/chats/${chatId}`);
 
     return data;
   }
@@ -289,8 +296,8 @@ class Messenger {
   }: {
     limit?: number;
     page?: number;
-    allowedUpdates?: Messenger.MessageType[];
-  } = {}): Promise<{ updates: Messenger.IOnUpdate[]; meta: any }> {
+    allowedUpdates?: MessageType[];
+  } = {}): Promise<{ updates: IOnUpdate[]; meta: any }> {
     const { data } = await this.#axiosInstance
       .get(
         `/v1/users/updates?page=${page}&limit=${limit}&hash=${
@@ -332,9 +339,9 @@ class Messenger {
     }: {
       limit?: number;
       page?: number;
-      type?: Messenger.ChatType;
+      type?: ChatType;
     } = { limit: 20, page: 1, type: null },
-  ) {
+  ): Promise<MyApiResponse<IChat>> {
     const data = await this.#axiosInstance.get(
       `/v1/chats?limit=${limit}&page=${page}${type ? `&type=${type}` : ''}`,
     );

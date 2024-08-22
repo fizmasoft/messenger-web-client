@@ -14,7 +14,7 @@
 //     return null;
 //   }
 
-//   const { data } = await request.get<ApiAuth.IToken>(token.refresh);
+//   const { data } = await request.get<IToken>(token.refresh);
 //   if (!data) {
 //     // resetAuthStore();
 

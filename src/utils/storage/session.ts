@@ -1,6 +1,6 @@
 import { decrypt, encrypt } from '../crypto';
 
-function createSessionStorage<T extends StorageInterface.Session = StorageInterface.Session>() {
+function createSessionStorage<T extends WindowSessionStorage = WindowSessionStorage>() {
   function set<K extends keyof T>(key: K, value: T[K]) {
     sessionStorage.setItem(key as string, encrypt(value));
   }

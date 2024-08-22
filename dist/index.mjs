@@ -743,7 +743,10 @@ handleRefreshToken_fn = function() {
   return __async(this, null, function* () {
     const { data } = yield axios.create(this.instance.defaults).get(__privateGet(this, _refreshTokenUrl));
     if (data && data.token) {
-      localStg.set("messengerToken", { access: data.token.accessToken, refresh: data.token.refreshToken });
+      localStg.set("messengerToken", {
+        access: data.token.accessToken,
+        refresh: data.token.refreshToken
+      });
     }
     return data.token.accessToken;
   });
@@ -990,6 +993,12 @@ var Messenger = class {
       localStg.set("messengerToken", __privateGet(this, _token));
       if (__privateGet(this, _polling)) {
         this.initPolling();
+        __privateGet(this, _events).connect.map(
+          (cb) => cb({
+            message: `Polling successfully connected`,
+            socket: this.socket
+          })
+        );
         return this;
       }
       return this.socket.connect().on("connect", () => {
@@ -1049,9 +1058,7 @@ var Messenger = class {
    */
   searchUser(search) {
     return __async(this, null, function* () {
-      const data = yield __privateGet(this, _axiosInstance).get(
-        `/v1/users?search=${search}`
-      );
+      const data = yield __privateGet(this, _axiosInstance).get(`/v1/users?search=${search}`);
       return data.data;
     });
   }
@@ -1073,13 +1080,15 @@ var Messenger = class {
       page: 1,
       search: ""
     }) {
-      const { data } = yield __privateGet(this, _axiosInstance).get(`/v1/chats/${chatId}?search=${search}&limit=${limit}&page=${page}`);
+      const { data } = yield __privateGet(this, _axiosInstance).get(
+        `/v1/chats/${chatId}/messages?search=${search}&limit=${limit}&page=${page}`
+      );
       return data;
     });
   }
   getChatInfo(chatId) {
     return __async(this, null, function* () {
-      const { data } = yield __privateGet(this, _axiosInstance).get(`/chats/${chatId}`);
+      const { data } = yield __privateGet(this, _axiosInstance).get(`/v1/chats/${chatId}`);
       return data;
     });
   }
