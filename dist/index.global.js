@@ -28931,7 +28931,7 @@
     "x-app-version": appVersion,
     "x-app-uid": uid
   };
-  var _pollingInterval, _polling, _axiosInstance, _events, _updatesHash, _token;
+  var _pollingInterval, _polling, _axiosInstance, _events, _updatesHash, _token, _tokenGetter;
   var Messenger = class {
     constructor({
       baseURL,
@@ -28946,9 +28946,11 @@
       __privateAdd(this, _events);
       __privateAdd(this, _updatesHash, "");
       __privateAdd(this, _token);
+      __privateAdd(this, _tokenGetter);
       this.uid = uid;
       __privateSet(this, _polling, polling);
       __privateSet(this, _events, {});
+      __privateSet(this, _tokenGetter, token);
       __privateSet(this, _axiosInstance, new CustomAxiosInstance(
         { baseURL, headers: requiredHeaders },
         {
@@ -28976,9 +28978,10 @@
       this.getChatFiles = this.getChatFiles.bind(this);
       this.getChatAudios = this.getChatAudios.bind(this);
       this.getUpdates = this.getUpdates.bind(this);
-      this.updateMessages = this.updateMessages.bind(this);
+      this.readMessage = this.readMessage.bind(this);
       this.getChats = this.getChats.bind(this);
-      this.init(token);
+      this.sendMessageToArea = this.sendMessageToArea.bind(this);
+      this.init();
     }
     close() {
       if (this.socket) {
@@ -29007,12 +29010,12 @@
       }
       __privateSet(this, _pollingInterval, setInterval(intervalCallback, polling.interval));
     }
-    init(token) {
+    init() {
       return __async(this, null, function* () {
-        if (typeof token === "function") {
-          __privateSet(this, _token, yield token());
+        if (typeof __privateGet(this, _tokenGetter) === "function") {
+          __privateSet(this, _token, yield __privateGet(this, _tokenGetter).call(this));
         } else {
-          __privateSet(this, _token, token);
+          __privateSet(this, _token, __privateGet(this, _tokenGetter));
         }
         localStg.set("messengerToken", __privateGet(this, _token));
         if (__privateGet(this, _polling)) {
@@ -29118,7 +29121,7 @@
     }
     getChatMedia(_0) {
       return __async(this, arguments, function* (chatId, { limit = 20, page = 1 } = { limit: 20, page: 1 }) {
-        return {};
+        return [];
       });
     }
     getChatFiles(_0) {
@@ -29137,9 +29140,7 @@
         page = 1,
         allowedUpdates = []
       } = {}) {
-        const { data } = yield __privateGet(this, _axiosInstance).get(
-          `/v1/users/updates?page=${page}&limit=${limit}&hash=${__privateGet(this, _updatesHash)}`
-        ).catch(() => ({
+        const { data } = yield __privateGet(this, _axiosInstance).get(`/v1/users/updates?page=${page}&limit=${limit}&hash=${__privateGet(this, _updatesHash)}`).catch(() => ({
           data: {
             data: [],
             meta: {
@@ -29151,16 +29152,15 @@
             }
           }
         }));
-        if (data.meta.hash) {
-          __privateSet(this, _updatesHash, data.meta.hash);
-        } else {
-          __privateSet(this, _updatesHash, "");
-        }
+        __privateSet(this, _updatesHash, data.meta.hash ? data.meta.hash : "");
         return { updates: data.data, meta: data.meta };
       });
     }
-    updateMessages(messages) {
-      return [];
+    readMessage(chatId, message) {
+      return __async(this, null, function* () {
+        const { data } = yield __privateGet(this, _axiosInstance).patch(`/v1/chats/${chatId}/messages`, message);
+        return data;
+      });
     }
     getChats() {
       return __async(this, arguments, function* ({
@@ -29168,19 +29168,19 @@
         page = 1,
         type = null
       } = { limit: 20, page: 1, type: null }) {
-        const data = yield __privateGet(this, _axiosInstance).get(
+        const { data } = yield __privateGet(this, _axiosInstance).get(
           `/v1/chats?limit=${limit}&page=${page}${type ? `&type=${type}` : ""}`
         );
-        return data.data;
+        return data;
       });
     }
     ping() {
       if (this.socket) {
-        this.socket.send("hello");
         this.socket.emit("ping", (/* @__PURE__ */ new Date()).toISOString());
       } else {
         __privateGet(this, _axiosInstance).get("/check-health").catch();
       }
+      return this;
     }
   };
   _pollingInterval = new WeakMap();
@@ -29189,6 +29189,7 @@
   _events = new WeakMap();
   _updatesHash = new WeakMap();
   _token = new WeakMap();
+  _tokenGetter = new WeakMap();
   var messenger;
   function getMessenger(customOptions, options = {}) {
     if (messenger) {

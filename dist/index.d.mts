@@ -55,6 +55,36 @@ interface MyHttpRequestOptions {
 }
 declare function request(opts: MyHttpRequestOptions): Promise<unknown>;
 
+type SuccessResponseData<T> = {
+    message: string;
+} | T | T[];
+type FailResponseData = string[];
+interface IMetaData {
+    limit: number;
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+}
+interface ISuccessResponse<T> {
+    data: SuccessResponseData<T>;
+    meta: IMetaData;
+    code: number;
+    message: string;
+    success: true;
+    time: string;
+    requestId: string;
+}
+interface IFailResponse {
+    message: string;
+    data: FailResponseData;
+    meta: IMetaData;
+    code: number;
+    success: false;
+    time: string;
+    requestId: string;
+}
+type MyApiResponse<T = unknown> = ISuccessResponse<T> | IFailResponse;
+
 type ChatType = 'private' | 'group' | 'channel' | 'bot';
 interface IChat {
     _id: string;
@@ -192,36 +222,6 @@ interface IEvents {
     }) => void;
 }
 
-type SuccessResponseData<T> = {
-    message: string;
-} | T | T[];
-type FailResponseData = string[];
-interface IMetaData {
-    limit: number;
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
-}
-interface ISuccessResponse<T> {
-    data: SuccessResponseData<T>;
-    meta: IMetaData;
-    code: number;
-    message: string;
-    success: true;
-    time: string;
-    requestId: string;
-}
-interface IFailResponse {
-    message: string;
-    data: FailResponseData;
-    meta: IMetaData;
-    code: number;
-    success: false;
-    time: string;
-    requestId: string;
-}
-type MyApiResponse<T = unknown> = ISuccessResponse<T> | IFailResponse;
-
 declare class Messenger {
     #private;
     uid: string;
@@ -229,13 +229,7 @@ declare class Messenger {
     constructor({ baseURL, token, polling, languageGetter, headers, }: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>);
     close(): void;
     private initPolling;
-    init(token: {
-        access: string;
-        refresh: string;
-    } | (() => Promise<{
-        access: string;
-        refresh: string;
-    }>)): Promise<Socket<DefaultEventsMap, DefaultEventsMap> | this>;
+    init(): Promise<Socket<DefaultEventsMap, DefaultEventsMap> | this>;
     on<Ev extends string = keyof IEvents>(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
     /**
      *
@@ -267,15 +261,15 @@ declare class Messenger {
     getChatMedia(chatId: string, { limit, page }?: {
         limit?: number;
         page?: number;
-    }): Promise<unknown>;
+    }): Promise<unknown[]>;
     getChatFiles(chatId: string, { limit, page }?: {
         limit?: number;
         page?: number;
-    }): Promise<unknown>;
+    }): Promise<unknown[]>;
     getChatAudios(chatId: string, { limit, page }?: {
         limit?: number;
         page?: number;
-    }): Promise<unknown>;
+    }): Promise<unknown[]>;
     getUpdates({ limit, page, allowedUpdates, }?: {
         limit?: number;
         page?: number;
@@ -284,13 +278,16 @@ declare class Messenger {
         updates: IOnUpdate[];
         meta: any;
     }>;
-    updateMessages(messages: []): any[];
+    readMessage(chatId: string, message: {
+        messageId: string;
+        messageReadAt: string;
+    }): Promise<any>;
     getChats({ limit, page, type, }?: {
         limit?: number;
         page?: number;
         type?: ChatType;
     }): Promise<MyApiResponse<IChat>>;
-    ping(): void;
+    ping(): this;
 }
 declare function getMessenger(customOptions: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>): Messenger;
 
