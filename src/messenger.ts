@@ -4,13 +4,13 @@ import type { ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
 import { io } from 'socket.io-client';
 import { v1 as uuidV1 } from 'uuid';
 import { ENV } from './common/config';
+import { MyApiResponse } from './types/api';
 import { ChatType, IChat } from './types/api/chat';
 import { IMessage, ISendMessage } from './types/api/message';
 import { IOnUpdate, MessageType } from './types/api/message.types';
 import { IUser } from './types/api/user';
 import { CustomOptions, DeviceTypesEnum, IEvents, IPollingOptions } from './types/types';
 import { CustomAxiosInstance, localStg } from './utils';
-import { MyApiResponse } from './types/api';
 
 const localUid = localStg.get('messengerDeviceUid');
 const uid = localUid ? localUid : uuidV1();
@@ -35,9 +35,12 @@ class Messenger {
   #polling: IPollingOptions;
   #axiosInstance: AxiosInstance;
   #events: Partial<Record<keyof IEvents, ((...args: any) => void)[]>>;
-  #updatesHash: string | null = '';
+  #updatesHash: string = '';
 
   #token: { access: string; refresh: string };
+  #tokenGetter:
+    | { access: string; refresh: string }
+    | (() => Promise<{ access: string; refresh: string }>);
 
   public uid: string;
   public readonly socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
@@ -55,6 +58,7 @@ class Messenger {
     this.uid = uid;
     this.#polling = polling;
     this.#events = {};
+    this.#tokenGetter = token;
     this.#axiosInstance = new CustomAxiosInstance(
       { baseURL: baseURL, headers: requiredHeaders },
       {
@@ -87,9 +91,10 @@ class Messenger {
     this.getChatFiles = this.getChatFiles.bind(this);
     this.getChatAudios = this.getChatAudios.bind(this);
     this.getUpdates = this.getUpdates.bind(this);
-    this.updateMessages = this.updateMessages.bind(this);
+    this.readMessage = this.readMessage.bind(this);
     this.getChats = this.getChats.bind(this);
-    this.init(token);
+    this.sendMessageToArea = this.sendMessageToArea.bind(this);
+    this.init();
   }
 
   public close() {
@@ -122,15 +127,11 @@ class Messenger {
     this.#pollingInterval = setInterval(intervalCallback, polling.interval);
   }
 
-  async init(
-    token:
-      | { access: string; refresh: string }
-      | (() => Promise<{ access: string; refresh: string }>),
-  ) {
-    if (typeof token === 'function') {
-      this.#token = await token();
+  async init() {
+    if (typeof this.#tokenGetter === 'function') {
+      this.#token = await this.#tokenGetter();
     } else {
-      this.#token = token;
+      this.#token = this.#tokenGetter;
     }
     localStg.set('messengerToken', this.#token);
 
@@ -194,11 +195,11 @@ class Messenger {
     event: Ev,
     cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void,
   ): this;
-  on<Ev extends string = keyof IEvents>(event: Ev, cb: (data: IOnUpdate) => void): this {
-    if (this.#events[event as keyof IEvents]) {
-      this.#events[event as keyof IEvents].push(cb);
+  on<Ev extends keyof IEvents = keyof IEvents>(event: Ev, cb: (data: IOnUpdate) => void): this {
+    if (this.#events[event]) {
+      this.#events[event].push(cb);
     } else {
-      this.#events[event as keyof IEvents] = [cb];
+      this.#events[event] = [cb];
     }
     // let a: Record<keyof IEvents, (...args: any) => void>;
     if (this.socket) {
@@ -271,21 +272,21 @@ class Messenger {
   public async getChatMedia(
     chatId: string,
     { limit = 20, page = 1 }: { limit?: number; page?: number } = { limit: 20, page: 1 },
-  ): Promise<unknown> {
-    return {};
+  ): Promise<unknown[]> {
+    return [];
   }
 
   public async getChatFiles(
     chatId: string,
     { limit = 20, page = 1 }: { limit?: number; page?: number } = { limit: 20, page: 1 },
-  ): Promise<unknown> {
+  ): Promise<unknown[]> {
     return [];
   }
 
   public async getChatAudios(
     chatId: string,
     { limit = 20, page = 1 }: { limit?: number; page?: number } = { limit: 20, page: 1 },
-  ): Promise<unknown> {
+  ): Promise<unknown[]> {
     return [];
   }
 
@@ -299,12 +300,7 @@ class Messenger {
     allowedUpdates?: MessageType[];
   } = {}): Promise<{ updates: IOnUpdate[]; meta: any }> {
     const { data } = await this.#axiosInstance
-      .get(
-        `/v1/users/updates?page=${page}&limit=${limit}&hash=${
-          this.#updatesHash
-          // this.#updatesHash ? this.#updatesHash : ''
-        }`,
-      )
+      .get(`/v1/users/updates?page=${page}&limit=${limit}&hash=${this.#updatesHash}`)
       .catch(() => ({
         data: {
           data: [],
@@ -318,17 +314,14 @@ class Messenger {
         },
       }));
 
-    if (data.meta.hash) {
-      this.#updatesHash = data.meta.hash;
-    } else {
-      this.#updatesHash = '';
-    }
+    this.#updatesHash = data.meta.hash ? data.meta.hash : '';
 
     return { updates: data.data, meta: data.meta };
   }
 
-  public updateMessages(messages: []) {
-    return []; // kim qachon o'qidi...
+  public async readMessage(chatId: string, message: { messageId: string; messageReadAt: string }) {
+    const { data } = await this.#axiosInstance.patch(`/v1/chats/${chatId}/messages`, message);
+    return data;
   }
 
   public async getChats(
@@ -342,20 +335,20 @@ class Messenger {
       type?: ChatType;
     } = { limit: 20, page: 1, type: null },
   ): Promise<MyApiResponse<IChat>> {
-    const data = await this.#axiosInstance.get(
+    const { data } = await this.#axiosInstance.get(
       `/v1/chats?limit=${limit}&page=${page}${type ? `&type=${type}` : ''}`,
     );
 
-    return data.data;
+    return data;
   }
 
   public ping() {
     if (this.socket) {
-      this.socket.send('hello');
       this.socket.emit('ping', new Date().toISOString());
     } else {
       this.#axiosInstance.get('/check-health').catch();
     }
+    return this;
   }
 }
 
