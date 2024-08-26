@@ -29097,7 +29097,10 @@
     }
     sendMessageToArea(filter2, message) {
       return __async(this, null, function* () {
-        const { data } = yield __privateGet(this, _axiosInstance).post(`/v1/users/message`, message);
+        const { data } = yield __privateGet(this, _axiosInstance).post(`/v1/users/message-by-area`, {
+          message,
+          filter: filter2
+        });
         return data;
       });
     }

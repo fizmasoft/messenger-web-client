@@ -5,8 +5,9 @@ import { io } from 'socket.io-client';
 import { v1 as uuidV1 } from 'uuid';
 import { ENV } from './common/config';
 import { MyApiResponse } from './types/api';
+import { FilterPolygonArea } from './types/api/area.filter';
 import { ChatType, IChat } from './types/api/chat';
-import { IMessage, ISendMessage } from './types/api/message';
+import { IMessage, ISendMessage, ISendMessageToArea } from './types/api/message';
 import { IOnUpdate, MessageType } from './types/api/message.types';
 import { IUser } from './types/api/user';
 import { CustomOptions, DeviceTypesEnum, IEvents, IPollingOptions } from './types/types';
@@ -227,23 +228,13 @@ class Messenger {
   }
 
   public async sendMessageToArea(
-    filter: {
-      radius: number;
-      right: number;
-      left: number;
-      coordinates: [number, number];
-      polygon: {
-        type: 'Polygon' | 'Point' | 'Polygon' | 'MultiPolygon' | 'LineString';
-        geometry: {
-          type: string;
-          coordinates: number[];
-        };
-        properties: {};
-      };
-    },
-    message: ISendMessage,
+    filter: FilterPolygonArea,
+    message: ISendMessageToArea,
   ): Promise<MyApiResponse<IUser>> {
-    const { data } = await this.#axiosInstance.post(`/v1/users/message`, message);
+    const { data } = await this.#axiosInstance.post(`/v1/users/message-by-area`, {
+      message,
+      filter,
+    });
 
     return data;
   }

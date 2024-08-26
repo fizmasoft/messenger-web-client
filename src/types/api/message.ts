@@ -1,4 +1,4 @@
-import { MessageType } from "./message.types";
+import { MessageType } from './message.types';
 
 export interface IMessageTo {
   chatId: string;
@@ -52,6 +52,12 @@ export interface IChatMessageWanted {
 export interface ISendMessage {
   messageType: MessageType;
   to: IMessageTo;
+  text?: string;
+  wanted?: IChatMessageWanted;
+}
+
+export interface ISendMessageToArea {
+  messageType: MessageType;
   text?: string;
   wanted?: IChatMessageWanted;
 }

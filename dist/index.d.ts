@@ -85,6 +85,41 @@ interface IFailResponse {
 }
 type MyApiResponse<T = unknown> = ISuccessResponse<T> | IFailResponse;
 
+interface IPolygonPoint {
+    polygon: {
+        geometry: {
+            type: 'Point';
+            coordinates: [number, number];
+        };
+        properties: any;
+        type: 'Feature';
+    };
+    radius: number;
+}
+interface IPolygon {
+    polygon: {
+        geometry: {
+            type: 'Polygon';
+            coordinates: [number, number][];
+        };
+        properties: any;
+        type: 'Feature';
+    };
+}
+interface IPolygonLine {
+    polygon: {
+        geometry: {
+            coordinates: [number, number][];
+            type: 'LineString';
+        };
+        properties: any;
+        type: 'Feature';
+    };
+    left: 50;
+    right: 50;
+}
+type FilterPolygonArea = IPolygonPoint | IPolygon | IPolygonLine;
+
 type ChatType = 'private' | 'group' | 'channel' | 'bot';
 interface IChat {
     _id: string;
@@ -165,6 +200,11 @@ interface ISendMessage {
     text?: string;
     wanted?: IChatMessageWanted;
 }
+interface ISendMessageToArea {
+    messageType: MessageType;
+    text?: string;
+    wanted?: IChatMessageWanted;
+}
 interface IMessage {
     messageType: MessageType;
     from: IMessageTo;
@@ -238,20 +278,7 @@ declare class Messenger {
      */
     searchUser(search: string): Promise<MyApiResponse<IUser>>;
     sendMessage(message: ISendMessage): Promise<MyApiResponse<IUser>>;
-    sendMessageToArea(filter: {
-        radius: number;
-        right: number;
-        left: number;
-        coordinates: [number, number];
-        polygon: {
-            type: 'Polygon' | 'Point' | 'Polygon' | 'MultiPolygon' | 'LineString';
-            geometry: {
-                type: string;
-                coordinates: number[];
-            };
-            properties: {};
-        };
-    }, message: ISendMessage): Promise<MyApiResponse<IUser>>;
+    sendMessageToArea(filter: FilterPolygonArea, message: ISendMessageToArea): Promise<MyApiResponse<IUser>>;
     getChatMessages(chatId: string, { limit, page, search }?: {
         limit?: number;
         page?: number;
