@@ -118,9 +118,21 @@ class Messenger {
     const events = this.#events;
     async function intervalCallback() {
       const { updates, meta } = await getUpdates({ limit: polling.limit });
-      if (events['update']) {
-        updates.map((update) => {
+      if (events['update'] && updates.updates) {
+        updates.updates.map((update) => {
           events['update'].map((cb) => cb(update));
+        });
+      }
+
+      if (events['updateUser'] && updates.users) {
+        updates.users.map((user) => {
+          events['updateUser'].map((cb) => cb(user));
+        });
+      }
+
+      if (events['updateMessage'] && updates.messages) {
+        updates.messages.map((message) => {
+          events['updateMessage'].map((cb) => cb(message));
         });
       }
     }
@@ -289,7 +301,20 @@ class Messenger {
     limit?: number;
     page?: number;
     allowedUpdates?: MessageType[];
-  } = {}): Promise<{ updates: IOnUpdate[]; meta: any }> {
+  } = {}): Promise<{
+    updates: {
+      updates: IOnUpdate[];
+      users: {
+        _id: string;
+        isOnline: boolean;
+      }[];
+      messages: {
+        _id: string;
+        readAt: string;
+      }[];
+    };
+    meta: any;
+  }> {
     const { data } = await this.#axiosInstance
       .get(`/v1/users/updates?page=${page}&limit=${limit}&hash=${this.#updatesHash}`)
       .catch(() => ({

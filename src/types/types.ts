@@ -27,6 +27,8 @@ export type CustomOptions = {
 
 export interface IEvents {
   update: (data: IOnUpdate) => void;
+  updateUser: (user: { _id: string; isOnline: boolean }) => void;
+  updateMessage: (message: { _id: string; readAt: string }) => void;
   chatAction: (action: IChatAction) => void;
   connect: (args: { message: string; socket: Socket<DefaultEventsMap, DefaultEventsMap> }) => void;
   disconnect: (args: {

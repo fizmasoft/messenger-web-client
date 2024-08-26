@@ -1,6 +1,6 @@
 export declare const sessionStg: {
-    set: <K extends "themeColor">(key: K, value: StorageInterface.Session[K]) => void;
-    get: <K extends "themeColor">(key: K) => StorageInterface.Session[K];
-    remove: (key: "themeColor") => void;
+    set: <K extends "sessionStorage">(key: K, value: WindowSessionStorage[K]) => void;
+    get: <K extends "sessionStorage">(key: K) => WindowSessionStorage[K];
+    remove: (key: "sessionStorage") => void;
     clear: () => void;
 };

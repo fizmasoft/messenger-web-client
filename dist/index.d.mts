@@ -245,6 +245,14 @@ type CustomOptions = {
 };
 interface IEvents {
     update: (data: IOnUpdate) => void;
+    updateUser: (user: {
+        _id: string;
+        isOnline: boolean;
+    }) => void;
+    updateMessage: (message: {
+        _id: string;
+        readAt: string;
+    }) => void;
     chatAction: (action: IChatAction) => void;
     connect: (args: {
         message: string;
@@ -302,7 +310,17 @@ declare class Messenger {
         page?: number;
         allowedUpdates?: MessageType[];
     }): Promise<{
-        updates: IOnUpdate[];
+        updates: {
+            updates: IOnUpdate[];
+            users: {
+                _id: string;
+                isOnline: boolean;
+            }[];
+            messages: {
+                _id: string;
+                readAt: string;
+            }[];
+        };
         meta: any;
     }>;
     readMessage(chatId: string, message: {

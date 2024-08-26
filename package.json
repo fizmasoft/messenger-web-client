@@ -1,6 +1,6 @@
 {
   "name": "messenger-app",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -11,10 +11,10 @@
   ],
   "scripts": {
     "build:tsup": "tsup",
-    "build": "rm -rf ./dist && tsc --project ./tsconfig.json && tsc-alias -p tsconfig.json",
+    "build": "rm -rf ./build && tsc --project ./tsconfig.json && tsc-alias -p tsconfig.json",
     "dev": "nodemon --exec ts-node -- --files ./src/index.ts",
     "dev:examples": "nodemon --exec ts-node -- --files ./src/examples/index.ts",
-    "start": "node ./dist/index.js",
+    "start": "node ./build/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prettier": "prettier 'src/**/*.ts'",
     "prettier:fix": "prettier --write 'src/**/*.ts'",

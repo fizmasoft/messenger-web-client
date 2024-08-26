@@ -977,9 +977,19 @@ var Messenger = class {
     function intervalCallback() {
       return __async(this, null, function* () {
         const { updates, meta } = yield getUpdates({ limit: polling.limit });
-        if (events["update"]) {
-          updates.map((update) => {
+        if (events["update"] && updates.updates) {
+          updates.updates.map((update) => {
             events["update"].map((cb) => cb(update));
+          });
+        }
+        if (events["updateUser"] && updates.users) {
+          updates.users.map((user) => {
+            events["updateUser"].map((cb) => cb(user));
+          });
+        }
+        if (events["updateMessage"] && updates.messages) {
+          updates.messages.map((message) => {
+            events["updateMessage"].map((cb) => cb(message));
           });
         }
       });

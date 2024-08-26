@@ -1,6 +1,7 @@
+import { ILocalStorage } from '../../types/storage';
 export declare const localStg: {
-    set: <K extends keyof StorageInterface.ILocal>(key: K, value: StorageInterface.ILocal[K], expire?: number | null) => void;
-    get: <K extends keyof StorageInterface.ILocal>(key: K) => StorageInterface.ILocal[K];
-    remove: (key: keyof StorageInterface.ILocal) => void;
+    set: <K extends keyof ILocalStorage>(key: K, value: ILocalStorage[K], expire?: number | null) => void;
+    get: <K extends keyof ILocalStorage>(key: K) => ILocalStorage[K];
+    remove: (key: keyof ILocalStorage) => void;
     clear: () => void;
 };
