@@ -228,15 +228,26 @@ class Messenger {
    * @returns {[]}
    */
   public async searchUser(search: string): Promise<MyApiResponse<IUser>> {
-    const data = await this.#axiosInstance.get<MyApiResponse<IUser>>(`/v1/users?search=${search}`);
+    const { data } = await this.#axiosInstance.get<MyApiResponse<IUser>>(
+      `/v1/users?search=${search}`,
+    );
 
-    return data.data;
+    return data;
   }
 
   public async sendMessage(message: ISendMessage): Promise<MyApiResponse<IUser>> {
-    const data = await this.#axiosInstance.post(`/v1/chats/${message.to.chatId}/messages`, message);
+    const { data } = await this.#axiosInstance.post(
+      `/v1/chats/${message.to.chatId}/messages`,
+      message,
+    );
 
-    return data.data;
+    return data;
+  }
+
+  public async sendMessageToNewUser(message: ISendMessage): Promise<MyApiResponse<IUser>> {
+    const { data } = await this.#axiosInstance.post(`/v1/users/message`, message);
+
+    return data;
   }
 
   public async sendMessageToArea(

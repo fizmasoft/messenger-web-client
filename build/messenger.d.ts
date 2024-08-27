@@ -23,6 +23,7 @@ declare class Messenger {
      */
     searchUser(search: string): Promise<MyApiResponse<IUser>>;
     sendMessage(message: ISendMessage): Promise<MyApiResponse<IUser>>;
+    sendMessageToNewUser(message: ISendMessage): Promise<MyApiResponse<IUser>>;
     sendMessageToArea(filter: FilterPolygonArea, message: ISendMessageToArea): Promise<MyApiResponse<IUser>>;
     getChatMessages(chatId: string, { limit, page, search }?: {
         limit?: number;

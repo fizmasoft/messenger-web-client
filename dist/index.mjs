@@ -1071,14 +1071,25 @@ var Messenger = class {
    */
   searchUser(search) {
     return __async(this, null, function* () {
-      const data = yield __privateGet(this, _axiosInstance).get(`/v1/users?search=${search}`);
-      return data.data;
+      const { data } = yield __privateGet(this, _axiosInstance).get(
+        `/v1/users?search=${search}`
+      );
+      return data;
     });
   }
   sendMessage(message) {
     return __async(this, null, function* () {
-      const data = yield __privateGet(this, _axiosInstance).post(`/v1/chats/${message.to.chatId}/messages`, message);
-      return data.data;
+      const { data } = yield __privateGet(this, _axiosInstance).post(
+        `/v1/chats/${message.to.chatId}/messages`,
+        message
+      );
+      return data;
+    });
+  }
+  sendMessageToNewUser(message) {
+    return __async(this, null, function* () {
+      const { data } = yield __privateGet(this, _axiosInstance).post(`/v1/users/message`, message);
+      return data;
     });
   }
   sendMessageToArea(filter, message) {
