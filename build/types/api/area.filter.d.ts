@@ -31,4 +31,18 @@ export interface IPolygonLine {
     left: 50;
     right: 50;
 }
-export type FilterPolygonArea = IPolygonPoint | IPolygon | IPolygonLine;
+interface by {
+    region: number;
+    district: number;
+    byArea: IPolygonPoint;
+    polygon: IPolygon;
+    polygonPoint: IPolygonPoint;
+    polygonLine: IPolygonLine;
+}
+export type IByArea<T extends keyof by> = {
+    [key in T]: by[T];
+} & {
+    by: T;
+};
+export type FilterPolygonArea = IByArea<'region'> | IByArea<'district'> | IByArea<'byArea'> | IByArea<'polygon'> | IByArea<'polygonLine'> | IByArea<'polygonPoint'>;
+export {};

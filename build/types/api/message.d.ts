@@ -6,6 +6,7 @@ export interface IMessageTo {
 export interface IChatMessageWanted {
     type: 'user' | 'car';
     title: string;
+    databaseName: string;
     sender: {
         firstName: string;
         lastName: string;
@@ -38,16 +39,51 @@ export interface IChatMessageWanted {
     text: string;
     region: string;
 }
+export interface ISendChatMessageWanted {
+    type: 'user' | 'car';
+    title: string;
+    databaseName: string;
+    wantedUser?: {
+        fullName: string;
+        birthDate: string;
+        image: string;
+        passport: string;
+        address: string;
+    };
+    pUser?: {
+        fullName: string;
+        birthDate: string;
+        image: string;
+        passport: string;
+        address: string;
+    };
+    car?: {
+        carImage: string;
+        carNumber: string;
+    };
+    initiator: string;
+    address: string;
+    objectName: string;
+    wantedDate: string;
+    statya: string;
+    rozType: string;
+    mera: string;
+    location: [number, number];
+    takenImage: string;
+    fullImage: string;
+    text: string;
+    region: string;
+}
 export interface ISendMessage {
     messageType: MessageType;
     to: IMessageTo;
     text?: string;
-    wanted?: IChatMessageWanted;
+    wanted?: ISendChatMessageWanted;
 }
 export interface ISendMessageToArea {
     messageType: MessageType;
     text?: string;
-    wanted?: IChatMessageWanted;
+    wanted?: ISendChatMessageWanted;
 }
 export interface IMessage {
     messageType: MessageType;

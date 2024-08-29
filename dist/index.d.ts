@@ -118,7 +118,20 @@ interface IPolygonLine {
     left: 50;
     right: 50;
 }
-type FilterPolygonArea = IPolygonPoint | IPolygon | IPolygonLine;
+interface by {
+    region: number;
+    district: number;
+    byArea: IPolygonPoint;
+    polygon: IPolygon;
+    polygonPoint: IPolygonPoint;
+    polygonLine: IPolygonLine;
+}
+type IByArea<T extends keyof by> = {
+    [key in T]: by[T];
+} & {
+    by: T;
+};
+type FilterPolygonArea = IByArea<'region'> | IByArea<'district'> | IByArea<'byArea'> | IByArea<'polygon'> | IByArea<'polygonLine'> | IByArea<'polygonPoint'>;
 
 type ChatType = 'private' | 'group' | 'channel' | 'bot';
 interface IChat {
@@ -162,6 +175,7 @@ interface IMessageTo {
 interface IChatMessageWanted {
     type: 'user' | 'car';
     title: string;
+    databaseName: string;
     sender: {
         firstName: string;
         lastName: string;
@@ -194,16 +208,51 @@ interface IChatMessageWanted {
     text: string;
     region: string;
 }
+interface ISendChatMessageWanted {
+    type: 'user' | 'car';
+    title: string;
+    databaseName: string;
+    wantedUser?: {
+        fullName: string;
+        birthDate: string;
+        image: string;
+        passport: string;
+        address: string;
+    };
+    pUser?: {
+        fullName: string;
+        birthDate: string;
+        image: string;
+        passport: string;
+        address: string;
+    };
+    car?: {
+        carImage: string;
+        carNumber: string;
+    };
+    initiator: string;
+    address: string;
+    objectName: string;
+    wantedDate: string;
+    statya: string;
+    rozType: string;
+    mera: string;
+    location: [number, number];
+    takenImage: string;
+    fullImage: string;
+    text: string;
+    region: string;
+}
 interface ISendMessage {
     messageType: MessageType;
     to: IMessageTo;
     text?: string;
-    wanted?: IChatMessageWanted;
+    wanted?: ISendChatMessageWanted;
 }
 interface ISendMessageToArea {
     messageType: MessageType;
     text?: string;
-    wanted?: IChatMessageWanted;
+    wanted?: ISendChatMessageWanted;
 }
 interface IMessage {
     messageType: MessageType;

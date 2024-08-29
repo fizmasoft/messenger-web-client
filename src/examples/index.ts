@@ -4,7 +4,7 @@ import { v1 as uuidV1 } from 'uuid';
 import { getMessenger } from '../index';
 import { localStg } from '../utils';
 import { IOnUpdate } from '../types/api/message.types';
-import { IChatMessageWanted, ISendMessage } from '../types/api/message';
+import { IChatMessageWanted, ISendChatMessageWanted, ISendMessage } from '../types/api/message';
 
 const baseURL = 'http://localhost:7000';
 const localUid = localStg.get('messengerDeviceUid');
@@ -95,18 +95,25 @@ setInterval(async () => {
       text: `Test xabar ${Math.random() * 100}. Time: ${new Date().toISOString()}`,
     };
   } else {
-    const wanted: IChatMessageWanted = {
+    const wanted: ISendChatMessageWanted = {
       type: 'user',
       title: 'MVD-Qidiruv',
-      user: {
-        firstName: 'Qumriniso',
+      databaseName: 'MVD-Qidiruv',
+      pUser: {
         image:
           'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG',
         // fullImage: 'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG',
-        lastName: 'Qambarov',
-        middleName: 'Qulmiddin qizi',
         fullName: 'Qambarov Qumriniso Qulmiddin qizi',
-        pAddress: 'Qashqadaryo Viloyat, Kitob Tuman, Qashqir qishloq',
+        address: 'Qashqadaryo Viloyat, Kitob Tuman, Qashqir qishloq',
+        passport: 'AA8432720',
+        birthDate: '19.05.1981',
+      },
+      wantedUser: {
+        image:
+          'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG',
+        // fullImage: 'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG',
+        fullName: 'Qambarov Qumriniso Qulmiddin qizi',
+        address: 'Qashqadaryo Viloyat, Kitob Tuman, Qashqir qishloq',
         passport: 'AA8432720',
         birthDate: '19.05.1981',
       },
@@ -115,10 +122,10 @@ setInterval(async () => {
           'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG',
         carNumber: '01O010OO',
       },
-      images: [
+      takenImage:
         'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG',
-      ],
-      // fullImages: ['http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG'],
+      fullImage:
+        'http://localhost:3000/v1/files/profile_photos/d1df88dc-62b6-4ba7-9a5f-9669be9040a3.JPEG',
       initiator: 'ЖАЛАКУДУКСКИЙ РОВД',
       address: 'Туркистон кўчаси, Dehqon bozori',
       text: `Test xabar ${Math.random() * 100}. Time: ${new Date().toISOString()}`,
@@ -127,12 +134,6 @@ setInterval(async () => {
       region: 'ОЛМАЛИК ШАҲРИ',
       statya: '139 ч.3 п.А;140 ч.1',
       rozType: 'МЕЖГОСУДАРСТВЕННЫЙ Р',
-      sender: {
-        firstName: 'MAMURAXON',
-        lastName: 'ASADOVA',
-        middleName: 'CHIRMASHEVNA',
-        fullName: 'ASADOVA MAMURAXON CHIRMASHEVNA',
-      },
       location: [40.84764631407434, 69.61757628864146],
       // fullImage: 'ivss_images/full_image_0ab1cece-d8bc-42ea-af6a-067206810dbd.jpg',
       // takenImage: 'ivss_images/taken_image_47fbc602-65ea-460a-bbd8-051c9df946f0.jpg',
@@ -140,7 +141,8 @@ setInterval(async () => {
       wantedDate: new Date('07.31.2019').toISOString(),
     };
     if (random % 3 === 0) {
-      wanted.user = null;
+      wanted.pUser = null;
+      wanted.wantedUser = null;
       wanted.type = 'car';
     } else {
       wanted.car = null;

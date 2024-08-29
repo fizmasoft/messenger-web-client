@@ -8,6 +8,7 @@ export interface IMessageTo {
 export interface IChatMessageWanted {
   type: 'user' | 'car';
   title: string; // databaseName
+  databaseName: string; // databaseName
   sender: {
     firstName: string;
     lastName: string;
@@ -49,17 +50,53 @@ export interface IChatMessageWanted {
   region: string;
 }
 
+export interface ISendChatMessageWanted {
+  type: 'user' | 'car';
+  title: string; // databaseName
+  databaseName: string; // databaseName
+  wantedUser?: {
+    fullName: string;
+    birthDate: string;
+    image: string;
+    passport: string;
+    address: string;
+  };
+  pUser?: {
+    fullName: string;
+    birthDate: string;
+    image: string;
+    passport: string;
+    address: string;
+  };
+  car?: {
+    carImage: string;
+    carNumber: string;
+  };
+  initiator: string; // * (tashabbuskor)
+  address: string;
+  objectName: string; // !
+  wantedDate: string;
+  statya: string; //! rename (modda)
+  rozType: string; // ! rename (qidiruv turi)
+  mera: string; // ! rename (ko'rilgan chora) reprisal
+  location: [number, number];
+  takenImage: string;
+  fullImage: string;
+  text: string;
+  region: string;
+}
+
 export interface ISendMessage {
   messageType: MessageType;
   to: IMessageTo;
   text?: string;
-  wanted?: IChatMessageWanted;
+  wanted?: ISendChatMessageWanted;
 }
 
 export interface ISendMessageToArea {
   messageType: MessageType;
   text?: string;
-  wanted?: IChatMessageWanted;
+  wanted?: ISendChatMessageWanted;
 }
 
 export interface IMessage {
