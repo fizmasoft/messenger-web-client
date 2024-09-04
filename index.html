@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test db</title>
+</head>
+
+<body>
+
+</body>
+<script>
+
+  (async () => {
+    let db
+    const request = indexedDB.open('chats')
+    request.onsuccess = (e) => {
+      // Create DB connection
+      db = request.result;
+    };
+    await new Promise((res) => {
+      request.onsuccess(e => {
+        db = request.result
+        res()
+      })
+    })
+
+    console.log(db);
+
+    db.source.add([{ name: 1, chat: { chat: 1 } }])
+    console.log(db.source.getAll());
+
+  })()
+
+</script>
+
+</html>

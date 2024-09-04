@@ -43,9 +43,11 @@ export class CustomAxiosInstance {
   }
 
   async #handleRefreshToken() {
-    const { data } = await axios
+    const {
+      data: { data },
+    } = await axios
       .create(this.instance.defaults)
-      .get<IUserLogin>(this.#refreshTokenUrl, {
+      .get<{ data: IUserLogin }>(this.#refreshTokenUrl, {
         headers: { Authorization: `Bearer ${localStg.get('messengerToken')?.refresh || ''}` },
       });
     if (data && data.token) {
@@ -63,14 +65,20 @@ export class CustomAxiosInstance {
       return;
     }
 
-    this.#isRefreshing = true;
-    const accessToken = await this.#handleRefreshToken();
-    if (accessToken) {
-      response.config.headers.Authorization = `Bearer ${accessToken}`;
-      this.#retryQueues.map((cb) => cb(response.config));
+    try {
+      this.#isRefreshing = true;
+      const accessToken = await this.#handleRefreshToken();
+      if (accessToken) {
+        response.config.headers.Authorization = `Bearer ${accessToken}`;
+        this.#retryQueues.map((cb) => cb(response.config));
+      }
+      this.#retryQueues = [];
+      this.#isRefreshing = false;
+    } catch (error) {
+      this.#retryQueues = [];
+      this.#isRefreshing = false;
+      throw error;
     }
-    this.#retryQueues = [];
-    this.#isRefreshing = false;
   }
 
   /** Set request interceptor */

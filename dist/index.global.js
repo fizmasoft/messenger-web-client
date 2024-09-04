@@ -28766,7 +28766,9 @@
   handleRefreshToken_fn = function() {
     return __async(this, null, function* () {
       var _a;
-      const { data } = yield axios_default.create(this.instance.defaults).get(__privateGet(this, _refreshTokenUrl), {
+      const {
+        data: { data }
+      } = yield axios_default.create(this.instance.defaults).get(__privateGet(this, _refreshTokenUrl), {
         headers: { Authorization: `Bearer ${((_a = localStg.get("messengerToken")) == null ? void 0 : _a.refresh) || ""}` }
       });
       if (data && data.token) {
@@ -28783,14 +28785,20 @@
       if (__privateGet(this, _isRefreshing)) {
         return;
       }
-      __privateSet(this, _isRefreshing, true);
-      const accessToken = yield __privateMethod(this, _CustomAxiosInstance_instances, handleRefreshToken_fn).call(this);
-      if (accessToken) {
-        response.config.headers.Authorization = `Bearer ${accessToken}`;
-        __privateGet(this, _retryQueues).map((cb) => cb(response.config));
+      try {
+        __privateSet(this, _isRefreshing, true);
+        const accessToken = yield __privateMethod(this, _CustomAxiosInstance_instances, handleRefreshToken_fn).call(this);
+        if (accessToken) {
+          response.config.headers.Authorization = `Bearer ${accessToken}`;
+          __privateGet(this, _retryQueues).map((cb) => cb(response.config));
+        }
+        __privateSet(this, _retryQueues, []);
+        __privateSet(this, _isRefreshing, false);
+      } catch (error) {
+        __privateSet(this, _retryQueues, []);
+        __privateSet(this, _isRefreshing, false);
+        throw error;
       }
-      __privateSet(this, _retryQueues, []);
-      __privateSet(this, _isRefreshing, false);
     });
   };
   /** Set request interceptor */
