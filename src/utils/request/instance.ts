@@ -45,7 +45,9 @@ export class CustomAxiosInstance {
   async #handleRefreshToken() {
     const { data } = await axios
       .create(this.instance.defaults)
-      .get<IUserLogin>(this.#refreshTokenUrl);
+      .get<IUserLogin>(this.#refreshTokenUrl, {
+        headers: { Authorization: `Bearer ${localStg.get('messengerToken')?.refresh || ''}` },
+      });
     if (data && data.token) {
       localStg.set('messengerToken', {
         access: data.token.accessToken,

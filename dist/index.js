@@ -763,7 +763,10 @@ _retryQueues = new WeakMap();
 _CustomAxiosInstance_instances = new WeakSet();
 handleRefreshToken_fn = function() {
   return __async(this, null, function* () {
-    const { data } = yield import_axios.default.create(this.instance.defaults).get(__privateGet(this, _refreshTokenUrl));
+    var _a;
+    const { data } = yield import_axios.default.create(this.instance.defaults).get(__privateGet(this, _refreshTokenUrl), {
+      headers: { Authorization: `Bearer ${((_a = localStg.get("messengerToken")) == null ? void 0 : _a.refresh) || ""}` }
+    });
     if (data && data.token) {
       localStg.set("messengerToken", {
         access: data.token.accessToken,
@@ -929,6 +932,7 @@ var requiredHeaders = {
   "x-app-version": appVersion,
   "x-app-uid": uid
 };
+var db = indexedDB.open("chats");
 var _pollingInterval, _polling, _axiosInstance, _events, _updatesHash, _token, _tokenGetter;
 var Messenger = class {
   constructor({

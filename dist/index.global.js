@@ -9259,7 +9259,7 @@
   var require_mime_types = __commonJS({
     "node_modules/mime-types/index.js"(exports) {
       "use strict";
-      var db = require_mime_db();
+      var db2 = require_mime_db();
       var extname = __require("path").extname;
       var EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
       var TEXT_TYPE_REGEXP = /^text\//i;
@@ -9276,7 +9276,7 @@
           return false;
         }
         var match = EXTRACT_TYPE_REGEXP.exec(type);
-        var mime = match && db[match[1].toLowerCase()];
+        var mime = match && db2[match[1].toLowerCase()];
         if (mime && mime.charset) {
           return mime.charset;
         }
@@ -9322,8 +9322,8 @@
       }
       function populateMaps(extensions, types) {
         var preference = ["nginx", "apache", void 0, "iana"];
-        Object.keys(db).forEach(function forEachMimeType(type) {
-          var mime = db[type];
+        Object.keys(db2).forEach(function forEachMimeType(type) {
+          var mime = db2[type];
           var exts = mime.extensions;
           if (!exts || !exts.length) {
             return;
@@ -9332,7 +9332,7 @@
           for (var i2 = 0; i2 < exts.length; i2++) {
             var extension2 = exts[i2];
             if (types[extension2]) {
-              var from = preference.indexOf(db[types[extension2]].source);
+              var from = preference.indexOf(db2[types[extension2]].source);
               var to = preference.indexOf(mime.source);
               if (types[extension2] !== "application/octet-stream" && (from > to || from === to && types[extension2].substr(0, 12) === "application/")) {
                 continue;
@@ -28765,7 +28765,10 @@
   _CustomAxiosInstance_instances = new WeakSet();
   handleRefreshToken_fn = function() {
     return __async(this, null, function* () {
-      const { data } = yield axios_default.create(this.instance.defaults).get(__privateGet(this, _refreshTokenUrl));
+      var _a;
+      const { data } = yield axios_default.create(this.instance.defaults).get(__privateGet(this, _refreshTokenUrl), {
+        headers: { Authorization: `Bearer ${((_a = localStg.get("messengerToken")) == null ? void 0 : _a.refresh) || ""}` }
+      });
       if (data && data.token) {
         localStg.set("messengerToken", {
           access: data.token.accessToken,
@@ -28931,6 +28934,7 @@
     "x-app-version": appVersion,
     "x-app-uid": uid
   };
+  var db = indexedDB.open("chats");
   var _pollingInterval, _polling, _axiosInstance, _events, _updatesHash, _token, _tokenGetter;
   var Messenger = class {
     constructor({

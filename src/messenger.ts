@@ -31,6 +31,10 @@ const requiredHeaders = {
   'x-app-uid': uid,
 };
 
+const db = indexedDB.open('chats');
+// db.onsuccess((ev) => {
+//   ev;
+// });
 class Messenger {
   #pollingInterval: NodeJS.Timer;
   #polling: IPollingOptions;
