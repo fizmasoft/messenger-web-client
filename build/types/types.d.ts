@@ -28,6 +28,19 @@ export type CustomOptions = {
     headers?: Record<string, string>;
 };
 export interface IEvents {
+    reconnect_attempt(args: any[]): void;
+    reconnect(args: any[]): void;
+    connect: (args: {
+        message: string;
+        socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    }) => void;
+    disconnect(args: {
+        reason: Socket.DisconnectReason;
+        details: DisconnectDescription;
+        message: string;
+        socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    }): void;
+    pong(): void;
     update: (data: IOnUpdate) => void;
     updateUser: (user: {
         _id: string;
@@ -38,16 +51,6 @@ export interface IEvents {
         readAt: string;
     }) => void;
     chatAction: (action: IChatAction) => void;
-    connect: (args: {
-        message: string;
-        socket: Socket<DefaultEventsMap, DefaultEventsMap>;
-    }) => void;
-    disconnect: (args: {
-        reason: Socket.DisconnectReason;
-        details: DisconnectDescription;
-        message: string;
-        socket: Socket<DefaultEventsMap, DefaultEventsMap>;
-    }) => void;
     socketConnectionError: (args: {
         message: string;
         error: Error;

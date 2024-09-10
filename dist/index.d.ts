@@ -55,6 +55,20 @@ interface MyHttpRequestOptions {
 }
 declare function request(opts: MyHttpRequestOptions): Promise<unknown>;
 
+declare global {
+    interface IFormattedDate {
+        date: Date;
+        iso: string;
+        hh_mm: string;
+        hh_mm_ss: string;
+        YYYY_MM_DD: string;
+        YYYY_MM_DD_hh_mm_ss: string;
+    }
+    interface Date {
+        toFormatted: () => IFormattedDate;
+    }
+}
+
 type SuccessResponseData<T> = {
     message: string;
 } | T | T[];
@@ -293,6 +307,19 @@ type CustomOptions = {
     headers?: Record<string, string>;
 };
 interface IEvents {
+    reconnect_attempt(args: any[]): void;
+    reconnect(args: any[]): void;
+    connect: (args: {
+        message: string;
+        socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    }) => void;
+    disconnect(args: {
+        reason: Socket.DisconnectReason;
+        details: DisconnectDescription;
+        message: string;
+        socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    }): void;
+    pong(): void;
     update: (data: IOnUpdate) => void;
     updateUser: (user: {
         _id: string;
@@ -303,31 +330,24 @@ interface IEvents {
         readAt: string;
     }) => void;
     chatAction: (action: IChatAction) => void;
-    connect: (args: {
-        message: string;
-        socket: Socket<DefaultEventsMap, DefaultEventsMap>;
-    }) => void;
-    disconnect: (args: {
-        reason: Socket.DisconnectReason;
-        details: DisconnectDescription;
-        message: string;
-        socket: Socket<DefaultEventsMap, DefaultEventsMap>;
-    }) => void;
     socketConnectionError: (args: {
         message: string;
         error: Error;
     }) => void;
 }
 
-declare class Messenger {
+declare class Messenger<Ev extends string = keyof IEvents> {
     #private;
     uid: string;
-    readonly socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
+    socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
     constructor({ baseURL, token, polling, languageGetter, headers, }: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>);
     close(): void;
     private initPolling;
     init(): Promise<Socket<DefaultEventsMap, DefaultEventsMap> | this>;
-    on<Ev extends string = keyof IEvents>(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
+    on(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
+    eventNames(): string[];
+    removeAllListeners(event?: Ev): this;
+    removeListener(event: Ev, callback: any): this;
     /**
      *
      * @param search id or username
@@ -384,7 +404,7 @@ declare class Messenger {
     }): Promise<MyApiResponse<IChat>>;
     ping(): this;
 }
-declare function getMessenger(customOptions: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>): Messenger;
+declare function getMessenger(customOptions: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>): Messenger<keyof IEvents>;
 
 /**
  * Encrypt data

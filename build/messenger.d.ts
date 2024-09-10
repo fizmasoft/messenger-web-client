@@ -7,15 +7,18 @@ import { IMessage, ISendMessage, ISendMessageToArea } from './types/api/message'
 import { IOnUpdate, MessageType } from './types/api/message.types';
 import { IUser } from './types/api/user';
 import { CustomOptions, IEvents } from './types/types';
-declare class Messenger {
+declare class Messenger<Ev extends string = keyof IEvents> {
     #private;
     uid: string;
-    readonly socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
+    socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
     constructor({ baseURL, token, polling, languageGetter, headers, }: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>);
     close(): void;
     private initPolling;
     init(): Promise<Socket<DefaultEventsMap, DefaultEventsMap> | this>;
-    on<Ev extends string = keyof IEvents>(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
+    on(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
+    eventNames(): string[];
+    removeAllListeners(event?: Ev): this;
+    removeListener(event: Ev, callback: any): this;
     /**
      *
      * @param search id or username
@@ -72,5 +75,5 @@ declare class Messenger {
     }): Promise<MyApiResponse<IChat>>;
     ping(): this;
 }
-export declare function getMessenger(customOptions: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>): Messenger;
+export declare function getMessenger(customOptions: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>): Messenger<keyof IEvents>;
 export {};

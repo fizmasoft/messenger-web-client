@@ -26,16 +26,19 @@ export type CustomOptions = {
 };
 
 export interface IEvents {
-  update: (data: IOnUpdate) => void;
-  updateUser: (user: { _id: string; isOnline: boolean }) => void;
-  updateMessage: (message: { _id: string; readAt: string }) => void;
-  chatAction: (action: IChatAction) => void;
+  reconnect_attempt(args: any[]): void;
+  reconnect(args: any[]): void;
   connect: (args: { message: string; socket: Socket<DefaultEventsMap, DefaultEventsMap> }) => void;
-  disconnect: (args: {
+  disconnect(args: {
     reason: Socket.DisconnectReason;
     details: DisconnectDescription;
     message: string;
     socket: Socket<DefaultEventsMap, DefaultEventsMap>;
-  }) => void;
+  }): void;
+  pong(): void;
+  update: (data: IOnUpdate) => void;
+  updateUser: (user: { _id: string; isOnline: boolean }) => void;
+  updateMessage: (message: { _id: string; readAt: string }) => void;
+  chatAction: (action: IChatAction) => void;
   socketConnectionError: (args: { message: string; error: Error }) => void;
 }

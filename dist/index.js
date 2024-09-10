@@ -707,6 +707,43 @@ function request(opts) {
   });
 }
 
+// src/common/utility/date-to-formatted.ts
+function formatDate(date) {
+  const locale = "uz-UZ";
+  return {
+    date,
+    iso: date.toISOString(),
+    hh_mm: date.toLocaleString(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }),
+    hh_mm_ss: date.toLocaleString(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    }),
+    YYYY_MM_DD: date.toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    }),
+    YYYY_MM_DD_hh_mm_ss: date.toLocaleString(locale, {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    })
+  };
+}
+Date.prototype.toFormatted = function() {
+  return formatDate(this);
+};
+
 // src/messenger.ts
 var import_socket = require("socket.io-client");
 var import_uuid2 = require("uuid");
@@ -940,8 +977,7 @@ var requiredHeaders = {
   "x-app-version": appVersion,
   "x-app-uid": uid
 };
-var db = indexedDB.open("chats");
-var _pollingInterval, _polling, _axiosInstance, _events, _updatesHash, _token, _tokenGetter;
+var _pollingInterval, _polling, _axiosInstance, _events, _updatesHash, _baseURL, _token, _tokenGetter;
 var Messenger = class {
   constructor({
     baseURL,
@@ -955,11 +991,14 @@ var Messenger = class {
     __privateAdd(this, _axiosInstance);
     __privateAdd(this, _events);
     __privateAdd(this, _updatesHash, "");
+    __privateAdd(this, _baseURL);
     __privateAdd(this, _token);
     __privateAdd(this, _tokenGetter);
     this.uid = uid;
     __privateSet(this, _polling, polling);
+    __privateSet(this, _baseURL, baseURL);
     __privateSet(this, _events, {});
+    __privateSet(this, _token, { access: "", refresh: "" });
     __privateSet(this, _tokenGetter, token);
     __privateSet(this, _axiosInstance, new CustomAxiosInstance(
       { baseURL, headers: requiredHeaders },
@@ -968,15 +1007,6 @@ var Messenger = class {
         languageGetter
       }
     ).instance);
-    if (polling === null) {
-      this.socket = (0, import_socket.io)(baseURL, __spreadValues({
-        path: "/messenger",
-        auth: __spreadProps(__spreadValues(__spreadValues({}, requiredHeaders), headers), {
-          token: __privateGet(this, _token)
-        }),
-        extraHeaders: __spreadValues(__spreadValues({}, requiredHeaders), headers)
-      }, options));
-    }
     this.init = this.init.bind(this);
     this.close = this.close.bind(this);
     this.initPolling = this.initPolling.bind(this);
@@ -1038,25 +1068,43 @@ var Messenger = class {
         __privateSet(this, _token, __privateGet(this, _tokenGetter));
       }
       localStg.set("messengerToken", __privateGet(this, _token));
+      if (__privateGet(this, _polling) === null) {
+        this.socket = (0, import_socket.io)(__privateGet(this, _baseURL), {
+          path: "/messenger",
+          autoConnect: false,
+          auth: (cb) => cb(__spreadProps(__spreadValues({}, requiredHeaders), {
+            token: __privateGet(this, _token).access
+          })),
+          extraHeaders: __spreadProps(__spreadValues({}, requiredHeaders), { token: __privateGet(this, _token).access })
+        });
+      }
       if (__privateGet(this, _polling)) {
         this.initPolling();
-        __privateGet(this, _events).connect.map(
-          (cb) => cb({
-            message: `Polling successfully connected`,
-            socket: this.socket
-          })
-        );
+        if (Array.isArray(__privateGet(this, _events)["connect"])) {
+          __privateGet(this, _events)["connect"].map(
+            (cb) => cb({
+              message: `Polling successfully connected`,
+              socket: this.socket
+            })
+          );
+        }
         return this;
       }
       return this.socket.connect().on("connect", () => {
-        __privateGet(this, _events).connect.map(
+        if (!Array.isArray(__privateGet(this, _events)["connect"])) {
+          return;
+        }
+        __privateGet(this, _events)["connect"].map(
           (cb) => cb({
             message: `Socket successfully connected. socket.id: ${this.socket.id}`,
             socket: this.socket
           })
         );
       }).on("disconnect", (reason, details) => {
-        __privateGet(this, _events).disconnect.map(
+        if (!Array.isArray(__privateGet(this, _events)["disconnect"])) {
+          return;
+        }
+        __privateGet(this, _events)["disconnect"].map(
           (cb) => cb({
             reason,
             details,
@@ -1065,15 +1113,18 @@ var Messenger = class {
           })
         );
       }).on("connect_error", (err) => {
+        if (!__privateGet(this, _events)["socketConnectionError"] || !Array.isArray(__privateGet(this, _events)["socketConnectionError"])) {
+          return;
+        }
         if (this.socket.active) {
-          __privateGet(this, _events).socketConnectionError.map(
+          __privateGet(this, _events)["socketConnectionError"].map(
             (cb) => cb({
               message: "temporary failure, the socket will automatically try to reconnect",
               error: err
             })
           );
         } else {
-          __privateGet(this, _events).socketConnectionError.map(
+          __privateGet(this, _events)["socketConnectionError"].map(
             (cb) => cb({
               message: `
                 the connection was denied by the server
@@ -1084,18 +1135,39 @@ var Messenger = class {
             })
           );
         }
+      }).on("update", (update) => {
+        if (!Array.isArray(__privateGet(this, _events)["update"])) {
+          return;
+        }
+        __privateGet(this, _events)["update"].map((cb) => cb(update));
       });
     });
   }
+  // public on(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
   on(event, cb) {
     if (__privateGet(this, _events)[event]) {
       __privateGet(this, _events)[event].push(cb);
     } else {
       __privateGet(this, _events)[event] = [cb];
     }
-    if (this.socket) {
-      this.socket.on(event, cb);
+    return this;
+  }
+  eventNames() {
+    return Object.keys(__privateGet(this, _events));
+  }
+  removeAllListeners(event) {
+    if (event) {
+      __privateGet(this, _events)[event] = [];
+      return;
     }
+    __privateSet(this, _events, {});
+    return this;
+  }
+  removeListener(event, callback) {
+    if (!__privateGet(this, _events)[event] || !Array.isArray(__privateGet(this, _events)[event])) {
+      return;
+    }
+    __privateGet(this, _events)[event].filter((cb) => cb.name !== callback.name);
     return this;
   }
   /**
@@ -1222,6 +1294,7 @@ _polling = new WeakMap();
 _axiosInstance = new WeakMap();
 _events = new WeakMap();
 _updatesHash = new WeakMap();
+_baseURL = new WeakMap();
 _token = new WeakMap();
 _tokenGetter = new WeakMap();
 var messenger;

@@ -31,24 +31,20 @@ const requiredHeaders = {
   'x-app-uid': uid,
 };
 
-const db = indexedDB.open('chats');
-// db.onsuccess((ev) => {
-//   ev;
-// });
-class Messenger {
+class Messenger<Ev extends string = keyof IEvents> {
   #pollingInterval: NodeJS.Timer;
-  #polling: IPollingOptions;
-  #axiosInstance: AxiosInstance;
-  #events: Partial<Record<keyof IEvents, ((...args: any) => void)[]>>;
+  readonly #polling: IPollingOptions;
+  readonly #axiosInstance: AxiosInstance;
+  #events: Partial<Record<Ev, ((...args: any) => void)[]>>;
   #updatesHash: string = '';
-
+  readonly #baseURL: string;
   #token: { access: string; refresh: string };
-  #tokenGetter:
+  readonly #tokenGetter:
     | { access: string; refresh: string }
     | (() => Promise<{ access: string; refresh: string }>);
 
   public uid: string;
-  public readonly socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
+  public socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
 
   constructor(
     {
@@ -62,7 +58,9 @@ class Messenger {
   ) {
     this.uid = uid;
     this.#polling = polling;
+    this.#baseURL = baseURL;
     this.#events = {};
+    this.#token = { access: '', refresh: '' };
     this.#tokenGetter = token;
     this.#axiosInstance = new CustomAxiosInstance(
       { baseURL: baseURL, headers: requiredHeaders },
@@ -71,19 +69,6 @@ class Messenger {
         languageGetter,
       },
     ).instance;
-
-    if (polling === null) {
-      this.socket = io(baseURL, {
-        path: '/messenger',
-        auth: {
-          ...requiredHeaders,
-          ...headers,
-          token: this.#token,
-        },
-        extraHeaders: { ...requiredHeaders, ...headers },
-        ...options,
-      });
-    }
 
     this.init = this.init.bind(this);
     this.close = this.close.bind(this);
@@ -152,21 +137,39 @@ class Messenger {
     }
     localStg.set('messengerToken', this.#token);
 
+    if (this.#polling === null) {
+      this.socket = io(this.#baseURL, {
+        path: '/messenger',
+        autoConnect: false,
+        auth: (cb) =>
+          cb({
+            ...requiredHeaders,
+            token: this.#token.access,
+          }),
+        extraHeaders: { ...requiredHeaders, token: this.#token.access },
+      });
+    }
+
     if (this.#polling) {
       this.initPolling();
-      this.#events.connect.map((cb) =>
-        cb({
-          message: `Polling successfully connected`,
-          socket: this.socket,
-        }),
-      );
+      if (Array.isArray(this.#events['connect'])) {
+        this.#events['connect'].map((cb) =>
+          cb({
+            message: `Polling successfully connected`,
+            socket: this.socket,
+          }),
+        );
+      }
       return this;
     }
 
     return this.socket
       .connect()
       .on('connect', () => {
-        this.#events.connect.map((cb) =>
+        if (!Array.isArray(this.#events['connect'])) {
+          return;
+        }
+        this.#events['connect'].map((cb) =>
           cb({
             message: `Socket successfully connected. socket.id: ${this.socket.id}`,
             socket: this.socket,
@@ -174,7 +177,11 @@ class Messenger {
         );
       })
       .on('disconnect', (reason, details) => {
-        this.#events.disconnect.map((cb) =>
+        if (!Array.isArray(this.#events['disconnect'])) {
+          return;
+        }
+
+        this.#events['disconnect'].map((cb) =>
           cb({
             reason,
             details,
@@ -186,15 +193,22 @@ class Messenger {
         );
       })
       .on('connect_error', (err) => {
+        if (
+          !this.#events['socketConnectionError'] ||
+          !Array.isArray(this.#events['socketConnectionError'])
+        ) {
+          return;
+        }
+
         if (this.socket.active) {
-          this.#events.socketConnectionError.map((cb) =>
+          this.#events['socketConnectionError'].map((cb) =>
             cb({
               message: 'temporary failure, the socket will automatically try to reconnect',
               error: err,
             }),
           );
         } else {
-          this.#events.socketConnectionError.map((cb) =>
+          this.#events['socketConnectionError'].map((cb) =>
             cb({
               message: `
                 the connection was denied by the server
@@ -205,24 +219,50 @@ class Messenger {
             }),
           );
         }
+      })
+      .on('update', (update) => {
+        if (!Array.isArray(this.#events['update'])) {
+          return;
+        }
+        this.#events['update'].map((cb) => cb(update));
       });
   }
 
-  public on<Ev extends string = keyof IEvents>(
-    event: Ev,
-    cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void,
-  ): this;
-  on<Ev extends keyof IEvents = keyof IEvents>(event: Ev, cb: (data: IOnUpdate) => void): this {
+  // public on(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
+  on(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this {
     if (this.#events[event]) {
       this.#events[event].push(cb);
     } else {
       this.#events[event] = [cb];
     }
     // let a: Record<keyof IEvents, (...args: any) => void>;
-    if (this.socket) {
-      this.socket.on(event, cb as any);
+    // if (this.socket) {
+    //   this.socket.on(event, cb as any);
+    // }
+
+    return this;
+  }
+
+  public eventNames(): string[] {
+    return Object.keys(this.#events);
+  }
+
+  public removeAllListeners(event?: Ev): this {
+    if (event) {
+      this.#events[event] = [];
+      return;
     }
 
+    this.#events = {};
+    return this;
+  }
+
+  public removeListener(event: Ev, callback: any): this {
+    if (!this.#events[event] || !Array.isArray(this.#events[event])) {
+      return;
+    }
+
+    this.#events[event].filter((cb) => cb.name !== callback.name);
     return this;
   }
 
