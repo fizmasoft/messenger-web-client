@@ -686,7 +686,7 @@ function request(opts) {
 }
 
 // src/common/utility/date-to-formatted.ts
-function formatDate(date) {
+function formatDate(date, separator = "-") {
   const locale = "uz-UZ";
   return {
     date,
@@ -695,18 +695,18 @@ function formatDate(date) {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false
-    }),
+    }).replace(/\//g, separator),
     hh_mm_ss: date.toLocaleString(locale, {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
       hour12: false
-    }),
+    }).replace(/\//g, separator),
     YYYY_MM_DD: date.toLocaleString(locale, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric"
-    }),
+    }).replace(/\//g, separator),
     YYYY_MM_DD_hh_mm_ss: date.toLocaleString(locale, {
       year: "numeric",
       month: "2-digit",
@@ -715,14 +715,16 @@ function formatDate(date) {
       minute: "2-digit",
       second: "2-digit",
       hour12: false
-    })
+    }).replace(/\//g, separator)
   };
 }
-Date.prototype.toFormatted = function() {
-  return formatDate(this);
+Date.prototype.toFormatted = function(separator = "-") {
+  return formatDate(this, separator);
 };
 
 // src/messenger.ts
+import { readFile } from "fs/promises";
+import { join } from "path";
 import { io } from "socket.io-client";
 import { v1 as uuidV12 } from "uuid";
 
@@ -947,6 +949,12 @@ var localUid = localStg.get("messengerDeviceUid");
 var uid = localUid ? localUid : uuidV12();
 localStg.set("messengerDeviceUid", uid);
 var appVersion = "0.0.0";
+readFile(join(process.cwd() + "/package.json")).then((v) => {
+  const json = JSON.parse(v.toString());
+  appVersion = json.version;
+}).catch((err) => {
+  console.log(err);
+});
 var requiredHeaders = {
   "x-device-type": "web" /* WEB */,
   "x-device-model": ENV.isBrowser ? `${navigator.userAgent} | ${navigator.platform}` : ENV.isNode ? `${process.platform} | ${process.arch} | Nodejs: ${process.version}` : "Unknown",
@@ -1153,10 +1161,14 @@ var Messenger = class {
    * @param search id or username
    * @returns {[]}
    */
-  searchUser(search) {
-    return __async(this, null, function* () {
+  searchUser() {
+    return __async(this, arguments, function* ({ limit = 20, page = 1, search = "" } = {
+      limit: 20,
+      page: 1,
+      search: ""
+    }) {
       const { data } = yield __privateGet(this, _axiosInstance).get(
-        `/v1/users?search=${search}`
+        `/v1/users?search=${search}&limit=${limit}&page=${page}`
       );
       return data;
     });

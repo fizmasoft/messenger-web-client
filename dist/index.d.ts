@@ -65,7 +65,7 @@ declare global {
         YYYY_MM_DD_hh_mm_ss: string;
     }
     interface Date {
-        toFormatted: () => IFormattedDate;
+        toFormatted: (separator?: string) => IFormattedDate;
     }
 }
 
@@ -353,7 +353,11 @@ declare class Messenger<Ev extends string = keyof IEvents> {
      * @param search id or username
      * @returns {[]}
      */
-    searchUser(search: string): Promise<MyApiResponse<IUser>>;
+    searchUser({ limit, page, search }?: {
+        limit?: number;
+        page?: number;
+        search?: string;
+    }): Promise<MyApiResponse<IUser>>;
     sendMessage(message: ISendMessage): Promise<MyApiResponse<IUser>>;
     sendMessageToNewUser(message: ISendMessage): Promise<MyApiResponse<IUser>>;
     sendMessageToArea(filter: FilterPolygonArea, message: ISendMessageToArea): Promise<MyApiResponse<IUser>>;

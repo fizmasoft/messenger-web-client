@@ -1,4 +1,4 @@
-export declare function formatDate(date: Date): IFormattedDate;
+export declare function formatDate(date: Date, separator?: string): IFormattedDate;
 export {};
 declare global {
     interface IFormattedDate {
@@ -10,6 +10,6 @@ declare global {
         YYYY_MM_DD_hh_mm_ss: string;
     }
     interface Date {
-        toFormatted: () => IFormattedDate;
+        toFormatted: (separator?: string) => IFormattedDate;
     }
 }

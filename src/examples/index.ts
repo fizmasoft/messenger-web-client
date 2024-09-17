@@ -1,16 +1,11 @@
 import axios from 'axios';
 import { v1 as uuidV1 } from 'uuid';
 // import { ENV } from '../common/config';
-import { getMessenger } from '../index';
+import { ENV, getMessenger } from '../index';
 import { ISendChatMessageWanted, ISendMessage } from '../types/api/message';
 import { IOnUpdate } from '../types/api/message.types';
+import { DeviceTypesEnum } from '../types/types';
 import { localStg } from '../utils';
-import EventEmitter from 'events';
-
-const e = new EventEmitter();
-e.eventNames;
-e.removeAllListeners;
-e.removeListener;
 
 const baseURL = 'http://localhost:7000';
 const localUid = localStg.get('messengerDeviceUid');
@@ -18,9 +13,11 @@ const uid = localUid ? localUid : uuidV1();
 localStg.set('messengerDeviceUid', uid);
 
 const chatId = '66cc25d3c1875cfa0dddfa20'; // ! rm
+let appVersion = '1.0.0';
 
 const apiKey = 'qalqon';
 const apiHash = '66b3576d917425b29a3e3644';
+
 const messenger = getMessenger({
   baseURL,
   apiKey,
@@ -33,10 +30,20 @@ const messenger = getMessenger({
     refresh: string;
   }> => {
     const token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoyMDA5LCJ1c2VybmFtZSI6IlVtYXJiZWsiLCJmdWxsX25hbWUiOiJBS0JBUk9WIFVNQVIiLCJwaG9uZV9udW1iZXIiOiIrOTk4OTQ1NDM0NTY3IiwiZ3JvdXAiOnsiaWQiOjIsIm5hbWUiOiJBZG1pbiIsImFjY2Vzc2VzIjpbM119LCJvcmdhbml6YXRpb25faWQiOm51bGwsInNlcnZpY2VzIjpbeyJpZCI6MiwibmFtZSI6Im50ZmFjZSIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NiwibmFtZSI6InhhdGxvdiIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6MTQsIm5hbWUiOiJlbWVobW9uIiwic3RhdHVzIjp0cnVlfSx7ImlkIjoxNiwibmFtZSI6ImF1dG8tdHJhbnNwb3J0Iiwic3RhdHVzIjp0cnVlfSx7ImlkIjoxOCwibmFtZSI6ImFjY2lkZW50cyIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6MjAsIm5hbWUiOiJkaGEiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjIxLCJuYW1lIjoiZm9ybWExIiwic3RhdHVzIjp0cnVlfSx7ImlkIjoyMiwibmFtZSI6Iml2c3MtbWFuYWdlciIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6MjcsIm5hbWUiOiJxdWljay1zZWFyY2giLCJzdGF0dXMiOnRydWV9LHsiaWQiOjI5LCJuYW1lIjoiY2FtZXJhIiwic3RhdHVzIjp0cnVlfSx7ImlkIjozMCwibmFtZSI6ImZ2diIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6MzEsIm5hbWUiOiJncHMiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjMyLCJuYW1lIjoic2F5bG92Iiwic3RhdHVzIjp0cnVlfSx7ImlkIjozNCwibmFtZSI6Imxpc3RlZC1wZW9wbGUiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjM2LCJuYW1lIjoidGFkYmlyIiwic3RhdHVzIjp0cnVlfSx7ImlkIjozOCwibmFtZSI6Im10cCIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NDAsIm5hbWUiOiJjcmltZSIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NDEsIm5hbWUiOiJjYXIiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjQyLCJuYW1lIjoib3BnIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo0MywibmFtZSI6Im1pYiIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NDQsIm5hbWUiOiJzZXJ2aWNlIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo0NSwibmFtZSI6Im5vdGlmaWNhdGlvbnMiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjQ2LCJuYW1lIjoidGVlbmFnZXJzIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo0NywibmFtZSI6ImJ1cy1wYXJraW5nIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo0OCwibmFtZSI6ImRldGVjdG9yIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo0OSwibmFtZSI6ImFkZC1jYW1lcmEiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjUwLCJuYW1lIjoiaXZzcy1jb250cm9sIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo1MSwibmFtZSI6IjV0YXNoYWJidXMiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjUyLCJuYW1lIjoibG9nZ2VyIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo1MywibmFtZSI6InNjbyIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NTQsIm5hbWUiOiJsYW5ndWFnZSIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NTUsIm5hbWUiOiJzdXBlcnZpc29yIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo1NywibmFtZSI6Im15LWluc3BlY3RvciIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NTksIm5hbWUiOiJib2R5LWNhbWVyYSIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NjAsIm5hbWUiOiJlbWlncmFudCIsInN0YXR1cyI6dHJ1ZX1dLCJkaXN0cmljdElkIjpudWxsLCJoYXNoIjoiNTBiMDQ4N2E2ZWUyM2U1OWY4NGM5MDM2NzdhYTg5MmIifSwiaWF0IjoxNzI1ODYwNzk3LCJleHAiOjE3MjU5NDcxOTd9.xEEklY5567Tm4HYanVHp41kODkm_nkJTSjcC7iLCDcI';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoyMDA5LCJ1c2VybmFtZSI6IlVtYXJiZWsiLCJmdWxsX25hbWUiOiJBS0JBUk9WIFVNQVIiLCJwaG9uZV9udW1iZXIiOiIrOTk4OTQ1NDM0NTY3IiwiZ3JvdXAiOnsiaWQiOjIsIm5hbWUiOiJBZG1pbiIsImFjY2Vzc2VzIjpbM119LCJvcmdhbml6YXRpb25faWQiOm51bGwsInNlcnZpY2VzIjpbeyJpZCI6MiwibmFtZSI6Im50ZmFjZSIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NiwibmFtZSI6InhhdGxvdiIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6MTQsIm5hbWUiOiJlbWVobW9uIiwic3RhdHVzIjp0cnVlfSx7ImlkIjoxNiwibmFtZSI6ImF1dG8tdHJhbnNwb3J0Iiwic3RhdHVzIjp0cnVlfSx7ImlkIjoxOCwibmFtZSI6ImFjY2lkZW50cyIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6MjAsIm5hbWUiOiJkaGEiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjIxLCJuYW1lIjoiZm9ybWExIiwic3RhdHVzIjp0cnVlfSx7ImlkIjoyMiwibmFtZSI6Iml2c3MtbWFuYWdlciIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6MjcsIm5hbWUiOiJxdWljay1zZWFyY2giLCJzdGF0dXMiOnRydWV9LHsiaWQiOjI5LCJuYW1lIjoiY2FtZXJhIiwic3RhdHVzIjp0cnVlfSx7ImlkIjozMCwibmFtZSI6ImZ2diIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6MzEsIm5hbWUiOiJncHMiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjMyLCJuYW1lIjoic2F5bG92Iiwic3RhdHVzIjp0cnVlfSx7ImlkIjozNCwibmFtZSI6Imxpc3RlZC1wZW9wbGUiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjM2LCJuYW1lIjoidGFkYmlyIiwic3RhdHVzIjp0cnVlfSx7ImlkIjozOCwibmFtZSI6Im10cCIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NDAsIm5hbWUiOiJjcmltZSIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NDEsIm5hbWUiOiJjYXIiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjQyLCJuYW1lIjoib3BnIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo0MywibmFtZSI6Im1pYiIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NDQsIm5hbWUiOiJzZXJ2aWNlIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo0NSwibmFtZSI6Im5vdGlmaWNhdGlvbnMiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjQ2LCJuYW1lIjoidGVlbmFnZXJzIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo0NywibmFtZSI6ImJ1cy1wYXJraW5nIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo0OCwibmFtZSI6ImRldGVjdG9yIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo0OSwibmFtZSI6ImFkZC1jYW1lcmEiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjUwLCJuYW1lIjoiaXZzcy1jb250cm9sIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo1MSwibmFtZSI6IjV0YXNoYWJidXMiLCJzdGF0dXMiOnRydWV9LHsiaWQiOjUyLCJuYW1lIjoibG9nZ2VyIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo1MywibmFtZSI6InNjbyIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NTQsIm5hbWUiOiJsYW5ndWFnZSIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NTUsIm5hbWUiOiJzdXBlcnZpc29yIiwic3RhdHVzIjp0cnVlfSx7ImlkIjo1NywibmFtZSI6Im15LWluc3BlY3RvciIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NTksIm5hbWUiOiJib2R5LWNhbWVyYSIsInN0YXR1cyI6dHJ1ZX0seyJpZCI6NjAsIm5hbWUiOiJlbWlncmFudCIsInN0YXR1cyI6dHJ1ZX1dLCJkaXN0cmljdElkIjpudWxsLCJoYXNoIjoiYTNjZDk0MDQ1N2EwZjA0ZGE5ZDQ1ZDY4MDRjMDM3Y2UifSwiaWF0IjoxNzI1OTcxNzQxLCJleHAiOjE3MjYwNTgxNDF9.vDkyGh1OJeiOHFWE-PNoYUrJoi5DAZgKdSIxkeapuso';
     const { data } = await axios.create({ baseURL }).get(`/v1/auth/me-from?token=${token}`, {
       headers: {
         Authorization: `Basic ${btoa(`${apiKey}:${apiHash}`)}`,
+        'x-device-type': DeviceTypesEnum.WEB,
+        'x-app-lang': 'Uz-Latin',
+        'x-device-model': ENV.isBrowser
+          ? `${navigator.userAgent} | ${navigator.platform}`
+          : ENV.isNode
+          ? `${process.platform} | ${process.arch} | Nodejs: ${process.version}`
+          : 'Unknown', // dynamically fetching device model info
+        // 'x-app-lang': (languageGetter() || 'Uz-Latin') as I18nType.LangType, // dynamically fetching language info
+        'x-app-version': appVersion,
+        'x-app-uid': uid,
       },
     });
 
@@ -66,8 +73,8 @@ const messenger = getMessenger({
 console.log('Success started');
 
 messenger
-  .on('connect', (args) => {
-    console.log('connected', args);
+  .on('connect', ({ message, socket }) => {
+    console.log('connected', message, socket.id);
   })
   .on('reconnect_attempt', (...args) => {
     console.log('reconnect_attempt', args);

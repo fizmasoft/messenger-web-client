@@ -1,5 +1,7 @@
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { AxiosInstance } from 'axios';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 import type { ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
 import { io } from 'socket.io-client';
 import { v1 as uuidV1 } from 'uuid';
@@ -16,8 +18,16 @@ import { CustomAxiosInstance, localStg } from './utils';
 const localUid = localStg.get('messengerDeviceUid');
 const uid = localUid ? localUid : uuidV1();
 localStg.set('messengerDeviceUid', uid);
-
 let appVersion = '0.0.0';
+
+readFile(join(process.cwd() + '/package.json'))
+  .then((v) => {
+    const json = JSON.parse(v.toString());
+    appVersion = json.version;
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
 const requiredHeaders = {
   'x-device-type': DeviceTypesEnum.WEB,
@@ -271,9 +281,15 @@ class Messenger<Ev extends string = keyof IEvents> {
    * @param search id or username
    * @returns {[]}
    */
-  public async searchUser(search: string): Promise<MyApiResponse<IUser>> {
+  public async searchUser(
+    { limit = 20, page = 1, search = '' }: { limit?: number; page?: number; search?: string } = {
+      limit: 20,
+      page: 1,
+      search: '',
+    },
+  ): Promise<MyApiResponse<IUser>> {
     const { data } = await this.#axiosInstance.get<MyApiResponse<IUser>>(
-      `/v1/users?search=${search}`,
+      `/v1/users?search=${search}&limit=${limit}&page=${page}`,
     );
 
     return data;
