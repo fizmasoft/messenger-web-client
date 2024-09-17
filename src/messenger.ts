@@ -1,6 +1,6 @@
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { AxiosInstance } from 'axios';
-import { readFile } from 'fs/promises';
+// import { readFile } from 'fs/promises';
 import { join } from 'path';
 import type { ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
 import { io } from 'socket.io-client';
@@ -20,14 +20,14 @@ const uid = localUid ? localUid : uuidV1();
 localStg.set('messengerDeviceUid', uid);
 let appVersion = '0.0.0';
 
-readFile(join(process.cwd() + '/package.json'))
-  .then((v) => {
-    const json = JSON.parse(v.toString());
-    appVersion = json.version;
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+// readFile(join(process.cwd() + '/package.json'))
+//   .then((v) => {
+//     const json = JSON.parse(v.toString());
+//     appVersion = json.version;
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
 
 const requiredHeaders = {
   'x-device-type': DeviceTypesEnum.WEB,
