@@ -1,7 +1,5 @@
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { AxiosInstance } from 'axios';
-// import { readFile } from 'fs/promises';
-import { join } from 'path';
 import type { ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
 import { io } from 'socket.io-client';
 import { v1 as uuidV1 } from 'uuid';

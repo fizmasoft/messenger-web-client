@@ -745,8 +745,6 @@ Date.prototype.toFormatted = function(separator = "-") {
 };
 
 // src/messenger.ts
-var import_promises = require("fs/promises");
-var import_path = require("path");
 var import_socket = require("socket.io-client");
 var import_uuid2 = require("uuid");
 
@@ -971,12 +969,6 @@ var localUid = localStg.get("messengerDeviceUid");
 var uid = localUid ? localUid : (0, import_uuid2.v1)();
 localStg.set("messengerDeviceUid", uid);
 var appVersion = "0.0.0";
-(0, import_promises.readFile)((0, import_path.join)(process.cwd() + "/package.json")).then((v) => {
-  const json = JSON.parse(v.toString());
-  appVersion = json.version;
-}).catch((err) => {
-  console.log(err);
-});
 var requiredHeaders = {
   "x-device-type": "web" /* WEB */,
   "x-device-model": ENV.isBrowser ? `${navigator.userAgent} | ${navigator.platform}` : ENV.isNode ? `${process.platform} | ${process.arch} | Nodejs: ${process.version}` : "Unknown",
