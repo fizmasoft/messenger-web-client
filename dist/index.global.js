@@ -9580,11 +9580,11 @@
       var mime = require_mime_types();
       var asynckit = require_asynckit();
       var populate = require_populate();
-      module.exports = FormData4;
-      util2.inherits(FormData4, CombinedStream);
-      function FormData4(options) {
-        if (!(this instanceof FormData4)) {
-          return new FormData4(options);
+      module.exports = FormData5;
+      util2.inherits(FormData5, CombinedStream);
+      function FormData5(options) {
+        if (!(this instanceof FormData5)) {
+          return new FormData5(options);
         }
         this._overheadLength = 0;
         this._valueLength = 0;
@@ -9595,9 +9595,9 @@
           this[option] = options[option];
         }
       }
-      FormData4.LINE_BREAK = "\r\n";
-      FormData4.DEFAULT_CONTENT_TYPE = "application/octet-stream";
-      FormData4.prototype.append = function(field, value, options) {
+      FormData5.LINE_BREAK = "\r\n";
+      FormData5.DEFAULT_CONTENT_TYPE = "application/octet-stream";
+      FormData5.prototype.append = function(field, value, options) {
         options = options || {};
         if (typeof options == "string") {
           options = { filename: options };
@@ -9617,7 +9617,7 @@
         append2(footer);
         this._trackLength(header, value, options);
       };
-      FormData4.prototype._trackLength = function(header, value, options) {
+      FormData5.prototype._trackLength = function(header, value, options) {
         var valueLength = 0;
         if (options.knownLength != null) {
           valueLength += +options.knownLength;
@@ -9627,7 +9627,7 @@
           valueLength = Buffer.byteLength(value);
         }
         this._valueLength += valueLength;
-        this._overheadLength += Buffer.byteLength(header) + FormData4.LINE_BREAK.length;
+        this._overheadLength += Buffer.byteLength(header) + FormData5.LINE_BREAK.length;
         if (!value || !value.path && !(value.readable && value.hasOwnProperty("httpVersion")) && !(value instanceof Stream)) {
           return;
         }
@@ -9635,7 +9635,7 @@
           this._valuesToMeasure.push(value);
         }
       };
-      FormData4.prototype._lengthRetriever = function(value, callback) {
+      FormData5.prototype._lengthRetriever = function(value, callback) {
         if (value.hasOwnProperty("fd")) {
           if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
             callback(null, value.end + 1 - (value.start ? value.start : 0));
@@ -9662,7 +9662,7 @@
           callback("Unknown stream");
         }
       };
-      FormData4.prototype._multiPartHeader = function(field, value, options) {
+      FormData5.prototype._multiPartHeader = function(field, value, options) {
         if (typeof options.header == "string") {
           return options.header;
         }
@@ -9689,12 +9689,12 @@
             header = [header];
           }
           if (header.length) {
-            contents += prop + ": " + header.join("; ") + FormData4.LINE_BREAK;
+            contents += prop + ": " + header.join("; ") + FormData5.LINE_BREAK;
           }
         }
-        return "--" + this.getBoundary() + FormData4.LINE_BREAK + contents + FormData4.LINE_BREAK;
+        return "--" + this.getBoundary() + FormData5.LINE_BREAK + contents + FormData5.LINE_BREAK;
       };
-      FormData4.prototype._getContentDisposition = function(value, options) {
+      FormData5.prototype._getContentDisposition = function(value, options) {
         var filename, contentDisposition;
         if (typeof options.filepath === "string") {
           filename = path.normalize(options.filepath).replace(/\\/g, "/");
@@ -9708,7 +9708,7 @@
         }
         return contentDisposition;
       };
-      FormData4.prototype._getContentType = function(value, options) {
+      FormData5.prototype._getContentType = function(value, options) {
         var contentType = options.contentType;
         if (!contentType && value.name) {
           contentType = mime.lookup(value.name);
@@ -9723,13 +9723,13 @@
           contentType = mime.lookup(options.filepath || options.filename);
         }
         if (!contentType && typeof value == "object") {
-          contentType = FormData4.DEFAULT_CONTENT_TYPE;
+          contentType = FormData5.DEFAULT_CONTENT_TYPE;
         }
         return contentType;
       };
-      FormData4.prototype._multiPartFooter = function() {
+      FormData5.prototype._multiPartFooter = function() {
         return function(next) {
-          var footer = FormData4.LINE_BREAK;
+          var footer = FormData5.LINE_BREAK;
           var lastPart = this._streams.length === 0;
           if (lastPart) {
             footer += this._lastBoundary();
@@ -9737,10 +9737,10 @@
           next(footer);
         }.bind(this);
       };
-      FormData4.prototype._lastBoundary = function() {
-        return "--" + this.getBoundary() + "--" + FormData4.LINE_BREAK;
+      FormData5.prototype._lastBoundary = function() {
+        return "--" + this.getBoundary() + "--" + FormData5.LINE_BREAK;
       };
-      FormData4.prototype.getHeaders = function(userHeaders) {
+      FormData5.prototype.getHeaders = function(userHeaders) {
         var header;
         var formHeaders = {
           "content-type": "multipart/form-data; boundary=" + this.getBoundary()
@@ -9752,16 +9752,16 @@
         }
         return formHeaders;
       };
-      FormData4.prototype.setBoundary = function(boundary) {
+      FormData5.prototype.setBoundary = function(boundary) {
         this._boundary = boundary;
       };
-      FormData4.prototype.getBoundary = function() {
+      FormData5.prototype.getBoundary = function() {
         if (!this._boundary) {
           this._generateBoundary();
         }
         return this._boundary;
       };
-      FormData4.prototype.getBuffer = function() {
+      FormData5.prototype.getBuffer = function() {
         var dataBuffer = new Buffer.alloc(0);
         var boundary = this.getBoundary();
         for (var i2 = 0, len = this._streams.length; i2 < len; i2++) {
@@ -9772,20 +9772,20 @@
               dataBuffer = Buffer.concat([dataBuffer, Buffer.from(this._streams[i2])]);
             }
             if (typeof this._streams[i2] !== "string" || this._streams[i2].substring(2, boundary.length + 2) !== boundary) {
-              dataBuffer = Buffer.concat([dataBuffer, Buffer.from(FormData4.LINE_BREAK)]);
+              dataBuffer = Buffer.concat([dataBuffer, Buffer.from(FormData5.LINE_BREAK)]);
             }
           }
         }
         return Buffer.concat([dataBuffer, Buffer.from(this._lastBoundary())]);
       };
-      FormData4.prototype._generateBoundary = function() {
+      FormData5.prototype._generateBoundary = function() {
         var boundary = "--------------------------";
         for (var i2 = 0; i2 < 24; i2++) {
           boundary += Math.floor(Math.random() * 10).toString(16);
         }
         this._boundary = boundary;
       };
-      FormData4.prototype.getLengthSync = function() {
+      FormData5.prototype.getLengthSync = function() {
         var knownLength = this._overheadLength + this._valueLength;
         if (this._streams.length) {
           knownLength += this._lastBoundary().length;
@@ -9795,14 +9795,14 @@
         }
         return knownLength;
       };
-      FormData4.prototype.hasKnownLength = function() {
+      FormData5.prototype.hasKnownLength = function() {
         var hasKnownLength = true;
         if (this._valuesToMeasure.length) {
           hasKnownLength = false;
         }
         return hasKnownLength;
       };
-      FormData4.prototype.getLength = function(cb) {
+      FormData5.prototype.getLength = function(cb) {
         var knownLength = this._overheadLength + this._valueLength;
         if (this._streams.length) {
           knownLength += this._lastBoundary().length;
@@ -9822,7 +9822,7 @@
           cb(null, knownLength);
         });
       };
-      FormData4.prototype.submit = function(params, cb) {
+      FormData5.prototype.submit = function(params, cb) {
         var request2, options, defaults2 = { method: "post" };
         if (typeof params == "string") {
           params = parseUrl(params);
@@ -9867,14 +9867,14 @@
         }.bind(this));
         return request2;
       };
-      FormData4.prototype._error = function(err) {
+      FormData5.prototype._error = function(err) {
         if (!this.error) {
           this.error = err;
           this.pause();
           this.emit("error", err);
         }
       };
-      FormData4.prototype.toString = function() {
+      FormData5.prototype.toString = function() {
         return "[object FormData]";
       };
     }
@@ -21937,6 +21937,9 @@
     return formatDate(this, separator);
   };
 
+  // src/messenger.ts
+  var import_form_data3 = __toESM(require_form_data());
+
   // node_modules/engine.io-parser/build/esm/commons.js
   var PACKET_TYPES = /* @__PURE__ */ Object.create(null);
   PACKET_TYPES["open"] = "0";
@@ -29189,12 +29192,12 @@
         return data;
       });
     }
-    sendMessage(message) {
+    sendMessage(chatId, message) {
       return __async(this, null, function* () {
-        const { data } = yield __privateGet(this, _axiosInstance).post(
-          `/v1/chats/${message.to.chatId}/messages`,
-          message
-        );
+        const headers = message instanceof import_form_data3.default ? __spreadValues({}, message.getHeaders()) : {};
+        const { data } = yield __privateGet(this, _axiosInstance).post(`/v1/chats/${chatId}/messages`, message, {
+          headers
+        });
         return data;
       });
     }

@@ -1,4 +1,5 @@
 import { DefaultEventsMap } from '@socket.io/component-emitter';
+import FormData from 'form-data';
 import type { ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
 import { MyApiResponse } from './types/api';
 import { FilterPolygonArea } from './types/api/area.filter';
@@ -29,7 +30,7 @@ declare class Messenger<Ev extends string = keyof IEvents> {
         page?: number;
         search?: string;
     }): Promise<MyApiResponse<IUser>>;
-    sendMessage(message: ISendMessage): Promise<MyApiResponse<IUser>>;
+    sendMessage(chatId: string, message: ISendMessage | FormData): Promise<MyApiResponse<IUser>>;
     sendMessageToNewUser(message: ISendMessage): Promise<MyApiResponse<IUser>>;
     sendMessageToArea(filter: FilterPolygonArea, message: ISendMessageToArea): Promise<MyApiResponse<IUser>>;
     getChatMessages(chatId: string, { limit, page, search }?: {

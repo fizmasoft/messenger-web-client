@@ -259,7 +259,6 @@ interface ISendChatMessageWanted {
 }
 interface ISendMessage {
     messageType: MessageType;
-    to: IMessageTo;
     text?: string;
     wanted?: ISendChatMessageWanted;
 }
@@ -358,7 +357,7 @@ declare class Messenger<Ev extends string = keyof IEvents> {
         page?: number;
         search?: string;
     }): Promise<MyApiResponse<IUser>>;
-    sendMessage(message: ISendMessage): Promise<MyApiResponse<IUser>>;
+    sendMessage(chatId: string, message: ISendMessage | FormData): Promise<MyApiResponse<IUser>>;
     sendMessageToNewUser(message: ISendMessage): Promise<MyApiResponse<IUser>>;
     sendMessageToArea(filter: FilterPolygonArea, message: ISendMessageToArea): Promise<MyApiResponse<IUser>>;
     getChatMessages(chatId: string, { limit, page, search }?: {

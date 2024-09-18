@@ -745,6 +745,7 @@ Date.prototype.toFormatted = function(separator = "-") {
 };
 
 // src/messenger.ts
+var import_form_data2 = __toESM(require("form-data"));
 var import_socket = require("socket.io-client");
 var import_uuid2 = require("uuid");
 
@@ -1187,12 +1188,12 @@ var Messenger = class {
       return data;
     });
   }
-  sendMessage(message) {
+  sendMessage(chatId, message) {
     return __async(this, null, function* () {
-      const { data } = yield __privateGet(this, _axiosInstance).post(
-        `/v1/chats/${message.to.chatId}/messages`,
-        message
-      );
+      const headers = message instanceof import_form_data2.default ? __spreadValues({}, message.getHeaders()) : {};
+      const { data } = yield __privateGet(this, _axiosInstance).post(`/v1/chats/${chatId}/messages`, message, {
+        headers
+      });
       return data;
     });
   }

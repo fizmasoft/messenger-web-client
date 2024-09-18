@@ -1,5 +1,6 @@
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { AxiosInstance } from 'axios';
+import FormData from 'form-data';
 import type { ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
 import { io } from 'socket.io-client';
 import { v1 as uuidV1 } from 'uuid';
@@ -293,11 +294,14 @@ class Messenger<Ev extends string = keyof IEvents> {
     return data;
   }
 
-  public async sendMessage(message: ISendMessage): Promise<MyApiResponse<IUser>> {
-    const { data } = await this.#axiosInstance.post(
-      `/v1/chats/${message.to.chatId}/messages`,
-      message,
-    );
+  public async sendMessage(
+    chatId: string,
+    message: ISendMessage | FormData,
+  ): Promise<MyApiResponse<IUser>> {
+    const headers = message instanceof FormData ? { ...message.getHeaders() } : {};
+    const { data } = await this.#axiosInstance.post(`/v1/chats/${chatId}/messages`, message, {
+      headers,
+    });
 
     return data;
   }

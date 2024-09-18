@@ -107,7 +107,7 @@ const getRadomNumber = (from: number, to: number) => from + Math.round(Math.rand
   if (random % 2 === 0) {
     message = {
       messageType: 'text',
-      to: { chatType: 'private', chatId: chatId },
+      // to: { chatType: 'private', chatId: chatId },
       text: `Test xabar ${Math.random() * 100}. Time: ${new Date().toISOString()}`,
     };
   } else {
@@ -166,7 +166,7 @@ const getRadomNumber = (from: number, to: number) => from + Math.round(Math.rand
 
     message = {
       messageType: 'wanted',
-      to: { chatType: 'private', chatId: chatId },
+      // to: { chatType: 'private', chatId: chatId },
       wanted: wanted,
       text: null,
     };

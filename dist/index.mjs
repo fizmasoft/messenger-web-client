@@ -723,6 +723,7 @@ Date.prototype.toFormatted = function(separator = "-") {
 };
 
 // src/messenger.ts
+import FormData2 from "form-data";
 import { io } from "socket.io-client";
 import { v1 as uuidV12 } from "uuid";
 
@@ -1165,12 +1166,12 @@ var Messenger = class {
       return data;
     });
   }
-  sendMessage(message) {
+  sendMessage(chatId, message) {
     return __async(this, null, function* () {
-      const { data } = yield __privateGet(this, _axiosInstance).post(
-        `/v1/chats/${message.to.chatId}/messages`,
-        message
-      );
+      const headers = message instanceof FormData2 ? __spreadValues({}, message.getHeaders()) : {};
+      const { data } = yield __privateGet(this, _axiosInstance).post(`/v1/chats/${chatId}/messages`, message, {
+        headers
+      });
       return data;
     });
   }

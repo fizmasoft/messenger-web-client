@@ -76,7 +76,6 @@ export interface ISendChatMessageWanted {
 }
 export interface ISendMessage {
     messageType: MessageType;
-    to: IMessageTo;
     text?: string;
     wanted?: ISendChatMessageWanted;
 }
