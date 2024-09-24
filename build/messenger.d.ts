@@ -73,9 +73,10 @@ declare class Messenger<Ev extends string = keyof IEvents> {
         messageId: string;
         messageReadAt: string;
     }): Promise<any>;
-    getChats({ limit, page, type, }?: {
+    getChats({ limit, page, search, type, }?: {
         limit?: number;
         page?: number;
+        search?: string;
         type?: ChatType;
     }): Promise<MyApiResponse<IChat>>;
     ping(): this;

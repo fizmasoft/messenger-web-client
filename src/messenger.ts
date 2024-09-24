@@ -414,15 +414,17 @@ class Messenger<Ev extends string = keyof IEvents> {
     {
       limit = 100,
       page = 1,
+      search,
       type = null,
     }: {
       limit?: number;
       page?: number;
+      search?: string;
       type?: ChatType;
     } = { limit: 20, page: 1, type: null },
   ): Promise<MyApiResponse<IChat>> {
     const { data } = await this.#axiosInstance.get(
-      `/v1/chats?limit=${limit}&page=${page}${type ? `&type=${type}` : ''}`,
+      `/v1/chats?search=${search}&limit=${limit}&page=${page}${type ? `&type=${type}` : ''}`,
     );
 
     return data;
