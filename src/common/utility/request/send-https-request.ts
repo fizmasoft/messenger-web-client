@@ -1,8 +1,13 @@
-import https, { RequestOptions } from 'https';
-import http from 'http';
 import FormData from 'form-data';
+import http from 'http';
+import https, { RequestOptions } from 'https';
 
-type BaseRequestHeadersList = 'Accept' | 'Content-Length' | 'User-Agent' | 'Content-Encoding' | 'Authorization';
+type BaseRequestHeadersList =
+  | 'Accept'
+  | 'Content-Length'
+  | 'User-Agent'
+  | 'Content-Encoding'
+  | 'Authorization';
 
 type ContentType =
   | 'text/html'
@@ -40,7 +45,7 @@ export async function request(opts: MyHttpRequestOptions): Promise<unknown> {
     method: opts.method,
     headers:
       opts.body instanceof FormData
-        ? opts.body.getHeaders()
+        ? opts.body.getHeaders?.() ?? { 'Content-Type': 'multipart/form-data' }
         : opts.headers
         ? opts.headers
         : {

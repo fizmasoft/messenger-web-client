@@ -298,10 +298,7 @@ class Messenger<Ev extends string = keyof IEvents> {
     chatId: string,
     message: ISendMessage | FormData,
   ): Promise<MyApiResponse<IUser>> {
-    const headers = message instanceof FormData ? { ...message.getHeaders() } : {};
-    const { data } = await this.#axiosInstance.post(`/v1/chats/${chatId}/messages`, message, {
-      headers,
-    });
+    const { data } = await this.#axiosInstance.post(`/v1/chats/${chatId}/messages`, message);
 
     return data;
   }

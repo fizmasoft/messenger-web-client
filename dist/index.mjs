@@ -643,19 +643,20 @@ function numberToText(num, alphabet) {
 }
 
 // src/common/utility/request/send-https-request.ts
-import https from "https";
-import http from "http";
 import FormData from "form-data";
+import http from "http";
+import https from "https";
 var bodyIsRequired = {
   GET: false,
   POST: true
 };
 function request(opts) {
   return __async(this, null, function* () {
+    var _a, _b, _c;
     if (bodyIsRequired[opts.method]) opts.body = opts.body || "{}";
     const reqOptions = {
       method: opts.method,
-      headers: opts.body instanceof FormData ? opts.body.getHeaders() : opts.headers ? opts.headers : {
+      headers: opts.body instanceof FormData ? (_c = (_b = (_a = opts.body).getHeaders) == null ? void 0 : _b.call(_a)) != null ? _c : { "Content-Type": "multipart/form-data" } : opts.headers ? opts.headers : {
         "Content-Type": "application/json"
       }
     };
@@ -723,7 +724,6 @@ Date.prototype.toFormatted = function(separator = "-") {
 };
 
 // src/messenger.ts
-import FormData2 from "form-data";
 import { io } from "socket.io-client";
 import { v1 as uuidV12 } from "uuid";
 
@@ -1168,10 +1168,7 @@ var Messenger = class {
   }
   sendMessage(chatId, message) {
     return __async(this, null, function* () {
-      const headers = message instanceof FormData2 ? __spreadValues({}, message.getHeaders()) : {};
-      const { data } = yield __privateGet(this, _axiosInstance).post(`/v1/chats/${chatId}/messages`, message, {
-        headers
-      });
+      const { data } = yield __privateGet(this, _axiosInstance).post(`/v1/chats/${chatId}/messages`, message);
       return data;
     });
   }
