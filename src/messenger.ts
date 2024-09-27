@@ -76,6 +76,7 @@ class Messenger<Ev extends string = keyof IEvents> {
       {
         refreshTokenUrl: '/v1/auth/refresh-token',
         languageGetter,
+        tokenGetter: token,
       },
     ).instance;
 

@@ -13,7 +13,9 @@ type RefreshRequestQueue = (config: AxiosRequestConfig) => void;
  */
 export class CustomAxiosInstance {
   readonly instance: AxiosInstance;
-
+  readonly #tokenGetter:
+    | { access: string; refresh: string }
+    | (() => Promise<{ access: string; refresh: string }>);
   #isRefreshing: boolean;
   #refreshTokenUrl: string;
   #languageGetter: () => LangType;
@@ -27,11 +29,15 @@ export class CustomAxiosInstance {
   constructor(
     axiosConfig: AxiosRequestConfig,
     {
+      tokenGetter,
       refreshTokenUrl,
       languageGetter,
     }: {
       refreshTokenUrl?: string;
       languageGetter: () => LangType;
+      tokenGetter:
+        | { access: string; refresh: string }
+        | (() => Promise<{ access: string; refresh: string }>);
     },
   ) {
     this.#languageGetter = languageGetter;
@@ -43,6 +49,20 @@ export class CustomAxiosInstance {
   }
 
   async #handleRefreshToken() {
+    if (!localStg.get('messengerToken')?.refresh) {
+      let token: {
+        access: string;
+        refresh: string;
+      };
+
+      if (typeof this.#tokenGetter === 'function') {
+        token = await this.#tokenGetter();
+      } else {
+        token = this.#tokenGetter;
+      }
+      localStg.set('messengerToken', token);
+    }
+
     const {
       data: { data },
     } = await axios

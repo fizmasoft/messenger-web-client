@@ -771,17 +771,19 @@ function decrypt(cipherText) {
 
 // src/utils/request/instance.ts
 var import_axios = __toESM(require("axios"));
-var _isRefreshing, _refreshTokenUrl, _languageGetter, _retryQueues, _CustomAxiosInstance_instances, handleRefreshToken_fn, refreshTokenAndReRequest_fn, setInterceptor_fn;
+var _tokenGetter, _isRefreshing, _refreshTokenUrl, _languageGetter, _retryQueues, _CustomAxiosInstance_instances, handleRefreshToken_fn, refreshTokenAndReRequest_fn, setInterceptor_fn;
 var CustomAxiosInstance = class {
   /**
    *
    * @param axiosConfig - axios configuration
    */
   constructor(axiosConfig, {
+    tokenGetter,
     refreshTokenUrl,
     languageGetter
   }) {
     __privateAdd(this, _CustomAxiosInstance_instances);
+    __privateAdd(this, _tokenGetter);
     __privateAdd(this, _isRefreshing);
     __privateAdd(this, _refreshTokenUrl);
     __privateAdd(this, _languageGetter);
@@ -794,6 +796,7 @@ var CustomAxiosInstance = class {
     __privateMethod(this, _CustomAxiosInstance_instances, setInterceptor_fn).call(this);
   }
 };
+_tokenGetter = new WeakMap();
 _isRefreshing = new WeakMap();
 _refreshTokenUrl = new WeakMap();
 _languageGetter = new WeakMap();
@@ -801,11 +804,20 @@ _retryQueues = new WeakMap();
 _CustomAxiosInstance_instances = new WeakSet();
 handleRefreshToken_fn = function() {
   return __async(this, null, function* () {
-    var _a;
+    var _a, _b;
+    if (!((_a = localStg.get("messengerToken")) == null ? void 0 : _a.refresh)) {
+      let token;
+      if (typeof __privateGet(this, _tokenGetter) === "function") {
+        token = yield __privateGet(this, _tokenGetter).call(this);
+      } else {
+        token = __privateGet(this, _tokenGetter);
+      }
+      localStg.set("messengerToken", token);
+    }
     const {
       data: { data }
     } = yield import_axios.default.create(this.instance.defaults).get(__privateGet(this, _refreshTokenUrl), {
-      headers: { Authorization: `Bearer ${((_a = localStg.get("messengerToken")) == null ? void 0 : _a.refresh) || ""}` }
+      headers: { Authorization: `Bearer ${((_b = localStg.get("messengerToken")) == null ? void 0 : _b.refresh) || ""}` }
     });
     if (data && data.token) {
       localStg.set("messengerToken", {
@@ -978,7 +990,7 @@ var requiredHeaders = {
   "x-app-version": appVersion,
   "x-app-uid": uid
 };
-var _pollingInterval, _polling, _axiosInstance, _events, _updatesHash, _baseURL, _token, _tokenGetter;
+var _pollingInterval, _polling, _axiosInstance, _events, _updatesHash, _baseURL, _token, _tokenGetter2;
 var Messenger = class {
   constructor({
     baseURL,
@@ -994,18 +1006,19 @@ var Messenger = class {
     __privateAdd(this, _updatesHash, "");
     __privateAdd(this, _baseURL);
     __privateAdd(this, _token);
-    __privateAdd(this, _tokenGetter);
+    __privateAdd(this, _tokenGetter2);
     this.uid = uid;
     __privateSet(this, _polling, polling);
     __privateSet(this, _baseURL, baseURL);
     __privateSet(this, _events, {});
     __privateSet(this, _token, { access: "", refresh: "" });
-    __privateSet(this, _tokenGetter, token);
+    __privateSet(this, _tokenGetter2, token);
     __privateSet(this, _axiosInstance, new CustomAxiosInstance(
       { baseURL, headers: requiredHeaders },
       {
         refreshTokenUrl: "/v1/auth/refresh-token",
-        languageGetter
+        languageGetter,
+        tokenGetter: token
       }
     ).instance);
     this.init = this.init.bind(this);
@@ -1063,10 +1076,10 @@ var Messenger = class {
   }
   init() {
     return __async(this, null, function* () {
-      if (typeof __privateGet(this, _tokenGetter) === "function") {
-        __privateSet(this, _token, yield __privateGet(this, _tokenGetter).call(this));
+      if (typeof __privateGet(this, _tokenGetter2) === "function") {
+        __privateSet(this, _token, yield __privateGet(this, _tokenGetter2).call(this));
       } else {
-        __privateSet(this, _token, __privateGet(this, _tokenGetter));
+        __privateSet(this, _token, __privateGet(this, _tokenGetter2));
       }
       localStg.set("messengerToken", __privateGet(this, _token));
       if (__privateGet(this, _polling) === null) {
@@ -1299,7 +1312,7 @@ _events = new WeakMap();
 _updatesHash = new WeakMap();
 _baseURL = new WeakMap();
 _token = new WeakMap();
-_tokenGetter = new WeakMap();
+_tokenGetter2 = new WeakMap();
 var messenger;
 function getMessenger(customOptions, options = {}) {
   if (messenger) {

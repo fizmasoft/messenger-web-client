@@ -432,9 +432,16 @@ declare class CustomAxiosInstance {
      *
      * @param axiosConfig - axios configuration
      */
-    constructor(axiosConfig: AxiosRequestConfig, { refreshTokenUrl, languageGetter, }: {
+    constructor(axiosConfig: AxiosRequestConfig, { tokenGetter, refreshTokenUrl, languageGetter, }: {
         refreshTokenUrl?: string;
         languageGetter: () => LangType;
+        tokenGetter: {
+            access: string;
+            refresh: string;
+        } | (() => Promise<{
+            access: string;
+            refresh: string;
+        }>);
     });
 }
 
