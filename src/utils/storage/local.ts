@@ -36,6 +36,8 @@ if (ENV.isBrowser) {
   };
 }
 
+const secret = localStorage.getItem('accessHash');
+
 function createLocalStorage<T extends ILocalStorage = ILocalStorage>() {
   /** The default cache period is 7 days */
   const DEFAULT_CACHE_TIME = 60 * 60 * 24 * 7;
@@ -46,7 +48,7 @@ function createLocalStorage<T extends ILocalStorage = ILocalStorage>() {
       expire: expire !== null ? new Date().getTime() + expire * 1000 : null,
     };
 
-    localStorage.setItem(key as string, encrypt(storageData));
+    localStorage.setItem(key as string, encrypt(storageData, secret));
   }
 
   function get<K extends keyof T>(key: K) {
@@ -57,7 +59,7 @@ function createLocalStorage<T extends ILocalStorage = ILocalStorage>() {
 
     let storageData: StorageData<T[K]> | null = null;
     try {
-      storageData = decrypt(json);
+      storageData = decrypt(json, secret);
     } catch {
       // Prevent parsing failure
     }

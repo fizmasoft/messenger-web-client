@@ -725,21 +725,20 @@ Date.prototype.toFormatted = function(separator = "-") {
 
 // src/messenger.ts
 import { io } from "socket.io-client";
-import { v1 as uuidV12 } from "uuid";
+import { v1 as uuidV1 } from "uuid";
 
 // src/utils/crypto/index.ts
 import CryptoJS from "crypto-js";
-import { v1 as uuidV1 } from "uuid";
-var cryptoSecret = uuidV1();
-function encrypt(data) {
+var cryptoSecret = "$2$2b$10$XfKDhQAQipHbIubP2MEAmOL/Grwuc79IMxV1xbqpUGYAVMXdG9L3GbIubP2ME$2b$10$XfKDhQAQipHbIubP2MEAmOL/Grwuc79IMxV1xbqpUGYAVGXfKDhQAQipHbIubP2MEAmOL/Grwuc79IMxV1xbqpUGYAVMXdG9L3G";
+function encrypt(data, secret2 = cryptoSecret) {
   return CryptoJS.AES.encrypt(
     JSON.stringify(data),
     // CryptoJS.lib.WordArray.create(serialize(data).buffer),
-    cryptoSecret
+    secret2
   ).toString();
 }
-function decrypt(cipherText) {
-  const bytes = CryptoJS.AES.decrypt(cipherText, cryptoSecret);
+function decrypt(cipherText, secret2 = cryptoSecret) {
+  const bytes = CryptoJS.AES.decrypt(cipherText, secret2);
   const originalText = bytes.toString(CryptoJS.enc.Utf8);
   if (originalText) {
     return JSON.parse(originalText);
@@ -880,6 +879,7 @@ if (ENV.isBrowser) {
     }
   };
 }
+var secret = localStorage.getItem("accessHash");
 function createLocalStorage() {
   const DEFAULT_CACHE_TIME = 60 * 60 * 24 * 7;
   function set(key, value, expire = DEFAULT_CACHE_TIME) {
@@ -887,7 +887,7 @@ function createLocalStorage() {
       value,
       expire: expire !== null ? (/* @__PURE__ */ new Date()).getTime() + expire * 1e3 : null
     };
-    localStorage.setItem(key, encrypt(storageData));
+    localStorage.setItem(key, encrypt(storageData, secret));
   }
   function get(key) {
     const json = localStorage.getItem(key);
@@ -896,7 +896,7 @@ function createLocalStorage() {
     }
     let storageData = null;
     try {
-      storageData = decrypt(json);
+      storageData = decrypt(json, secret);
     } catch (e) {
     }
     if (!storageData) {
@@ -957,7 +957,7 @@ var sessionStg = createSessionStorage();
 
 // src/messenger.ts
 var localUid = localStg.get("messengerDeviceUid");
-var uid = localUid ? localUid : uuidV12();
+var uid = localUid ? localUid : uuidV1();
 localStg.set("messengerDeviceUid", uid);
 var appVersion = "0.0.0";
 var requiredHeaders = {

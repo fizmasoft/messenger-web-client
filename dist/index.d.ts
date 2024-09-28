@@ -414,12 +414,12 @@ declare function getMessenger(customOptions: CustomOptions, options?: Partial<Ma
  * Encrypt data
  * @param data - data
  */
-declare function encrypt<T = unknown>(data: T): string;
+declare function encrypt<T = unknown>(data: T, secret?: string): string;
 /**
  * Decrypt data
  * @param cipherText - cipher text
  */
-declare function decrypt<T = unknown>(cipherText: string): T | null;
+declare function decrypt<T = unknown>(cipherText: string, secret?: string): T | null;
 
 /**
  * Encapsulate axios request class
