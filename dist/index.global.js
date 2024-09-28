@@ -21867,11 +21867,11 @@
   };
   function request(opts) {
     return __async(this, null, function* () {
-      var _a, _b, _c;
+      var _a2, _b, _c;
       if (bodyIsRequired[opts.method]) opts.body = opts.body || "{}";
       const reqOptions = {
         method: opts.method,
-        headers: opts.body instanceof import_form_data.default ? (_c = (_b = (_a = opts.body).getHeaders) == null ? void 0 : _b.call(_a)) != null ? _c : { "Content-Type": "multipart/form-data" } : opts.headers ? opts.headers : {
+        headers: opts.body instanceof import_form_data.default ? (_c = (_b = (_a2 = opts.body).getHeaders) == null ? void 0 : _b.call(_a2)) != null ? _c : { "Content-Type": "multipart/form-data" } : opts.headers ? opts.headers : {
           "Content-Type": "application/json"
         }
       };
@@ -22538,8 +22538,8 @@
     addCookies(xhr) {
       const cookies = [];
       this.cookies.forEach((cookie, name) => {
-        var _a;
-        if (((_a = cookie.expires) === null || _a === void 0 ? void 0 : _a.getTime()) < Date.now()) {
+        var _a2;
+        if (((_a2 = cookie.expires) === null || _a2 === void 0 ? void 0 : _a2.getTime()) < Date.now()) {
           this.cookies.delete(name);
         } else {
           cookies.push(`${name}=${cookie.value}`);
@@ -22785,7 +22785,7 @@
      * @private
      */
     create() {
-      var _a;
+      var _a2;
       const opts = pick(this.opts, "agent", "pfx", "key", "passphrase", "cert", "ca", "ciphers", "rejectUnauthorized", "autoUnref");
       opts.xdomain = !!this.opts.xd;
       const xhr = this.xhr = new XHR(opts);
@@ -22813,7 +22813,7 @@
           xhr.setRequestHeader("Accept", "*/*");
         } catch (e) {
         }
-        (_a = this.opts.cookieJar) === null || _a === void 0 ? void 0 : _a.addCookies(xhr);
+        (_a2 = this.opts.cookieJar) === null || _a2 === void 0 ? void 0 : _a2.addCookies(xhr);
         if ("withCredentials" in xhr) {
           xhr.withCredentials = this.opts.withCredentials;
         }
@@ -22821,9 +22821,9 @@
           xhr.timeout = this.opts.requestTimeout;
         }
         xhr.onreadystatechange = () => {
-          var _a2;
+          var _a3;
           if (xhr.readyState === 3) {
-            (_a2 = this.opts.cookieJar) === null || _a2 === void 0 ? void 0 : _a2.parseCookies(xhr);
+            (_a3 = this.opts.cookieJar) === null || _a3 === void 0 ? void 0 : _a3.parseCookies(xhr);
           }
           if (4 !== xhr.readyState)
             return;
@@ -23123,8 +23123,8 @@
       }
     }
     doClose() {
-      var _a;
-      (_a = this.transport) === null || _a === void 0 ? void 0 : _a.close();
+      var _a2;
+      (_a2 = this.transport) === null || _a2 === void 0 ? void 0 : _a2.close();
     }
   };
 
@@ -24340,8 +24340,8 @@
      * @private
      */
     _registerAckCallback(id, ack) {
-      var _a;
-      const timeout = (_a = this.flags.timeout) !== null && _a !== void 0 ? _a : this._opts.ackTimeout;
+      var _a2;
+      const timeout = (_a2 = this.flags.timeout) !== null && _a2 !== void 0 ? _a2 : this._opts.ackTimeout;
       if (timeout === void 0) {
         this.acks[id] = ack;
         return;
@@ -24978,7 +24978,7 @@
   var debug9 = (0, import_debug9.default)("socket.io-client:manager");
   var Manager = class extends Emitter {
     constructor(uri, opts) {
-      var _a;
+      var _a2;
       super();
       this.nsps = {};
       this.subs = [];
@@ -24994,7 +24994,7 @@
       this.reconnectionAttempts(opts.reconnectionAttempts || Infinity);
       this.reconnectionDelay(opts.reconnectionDelay || 1e3);
       this.reconnectionDelayMax(opts.reconnectionDelayMax || 5e3);
-      this.randomizationFactor((_a = opts.randomizationFactor) !== null && _a !== void 0 ? _a : 0.5);
+      this.randomizationFactor((_a2 = opts.randomizationFactor) !== null && _a2 !== void 0 ? _a2 : 0.5);
       this.backoff = new Backoff({
         min: this.reconnectionDelay(),
         max: this.reconnectionDelayMax(),
@@ -25023,27 +25023,27 @@
       return this;
     }
     reconnectionDelay(v) {
-      var _a;
+      var _a2;
       if (v === void 0)
         return this._reconnectionDelay;
       this._reconnectionDelay = v;
-      (_a = this.backoff) === null || _a === void 0 ? void 0 : _a.setMin(v);
+      (_a2 = this.backoff) === null || _a2 === void 0 ? void 0 : _a2.setMin(v);
       return this;
     }
     randomizationFactor(v) {
-      var _a;
+      var _a2;
       if (v === void 0)
         return this._randomizationFactor;
       this._randomizationFactor = v;
-      (_a = this.backoff) === null || _a === void 0 ? void 0 : _a.setJitter(v);
+      (_a2 = this.backoff) === null || _a2 === void 0 ? void 0 : _a2.setJitter(v);
       return this;
     }
     reconnectionDelayMax(v) {
-      var _a;
+      var _a2;
       if (v === void 0)
         return this._reconnectionDelayMax;
       this._reconnectionDelayMax = v;
-      (_a = this.backoff) === null || _a === void 0 ? void 0 : _a.setMax(v);
+      (_a2 = this.backoff) === null || _a2 === void 0 ? void 0 : _a2.setMax(v);
       return this;
     }
     timeout(v) {
@@ -28806,8 +28806,8 @@
   _CustomAxiosInstance_instances = new WeakSet();
   handleRefreshToken_fn = function() {
     return __async(this, null, function* () {
-      var _a, _b;
-      if (!((_a = localStg.get("messengerToken")) == null ? void 0 : _a.refresh)) {
+      var _a2, _b;
+      if (!((_a2 = localStg.get("messengerToken")) == null ? void 0 : _a2.refresh)) {
         let token;
         if (typeof __privateGet(this, _tokenGetter) === "function") {
           token = yield __privateGet(this, _tokenGetter).call(this);
@@ -28854,19 +28854,19 @@
   /** Set request interceptor */
   setInterceptor_fn = function() {
     this.instance.interceptors.request.use((config2) => __async(this, null, function* () {
-      var _a;
+      var _a2;
       const handleConfig = __spreadValues({}, config2);
       handleConfig.headers["x-app-lang"] = __privateGet(this, _languageGetter).call(this) || "Uz-Latin";
       if (handleConfig.headers) {
-        handleConfig.headers.Authorization = `Bearer ${((_a = localStg.get("messengerToken")) == null ? void 0 : _a.access) || ""}`;
+        handleConfig.headers.Authorization = `Bearer ${((_a2 = localStg.get("messengerToken")) == null ? void 0 : _a2.access) || ""}`;
       }
       return handleConfig;
     }));
     this.instance.interceptors.response.use(
       (response) => response,
       (axiosError) => __async(this, null, function* () {
-        var _a, _b, _c;
-        if (((_a = axiosError.response) == null ? void 0 : _a.data["code"]) && RESPONSE_CODES.REFRESH_TOKEN_CODES.includes((_b = axiosError.response) == null ? void 0 : _b.data["code"]) || RESPONSE_CODES.REFRESH_TOKEN_CODES.includes((_c = axiosError.response) == null ? void 0 : _c.status)) {
+        var _a2, _b, _c;
+        if (((_a2 = axiosError.response) == null ? void 0 : _a2.data["code"]) && RESPONSE_CODES.REFRESH_TOKEN_CODES.includes((_b = axiosError.response) == null ? void 0 : _b.data["code"]) || RESPONSE_CODES.REFRESH_TOKEN_CODES.includes((_c = axiosError.response) == null ? void 0 : _c.status)) {
           const originRequest = new Promise((resolve) => {
             __privateGet(this, _retryQueues).push((refreshConfig) => {
               resolve(this.instance.request(refreshConfig));
@@ -28904,7 +28904,8 @@
       }
     };
   }
-  var secret = localStorage2.getItem("accessHash");
+  var _a;
+  var secret = (_a = localStorage2.getItem("accessHash")) != null ? _a : void 0;
   function createLocalStorage() {
     const DEFAULT_CACHE_TIME = 60 * 60 * 24 * 7;
     function set(key, value, expire = DEFAULT_CACHE_TIME) {

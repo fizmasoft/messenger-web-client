@@ -674,11 +674,11 @@ var bodyIsRequired = {
 };
 function request(opts) {
   return __async(this, null, function* () {
-    var _a, _b, _c;
+    var _a2, _b, _c;
     if (bodyIsRequired[opts.method]) opts.body = opts.body || "{}";
     const reqOptions = {
       method: opts.method,
-      headers: opts.body instanceof import_form_data.default ? (_c = (_b = (_a = opts.body).getHeaders) == null ? void 0 : _b.call(_a)) != null ? _c : { "Content-Type": "multipart/form-data" } : opts.headers ? opts.headers : {
+      headers: opts.body instanceof import_form_data.default ? (_c = (_b = (_a2 = opts.body).getHeaders) == null ? void 0 : _b.call(_a2)) != null ? _c : { "Content-Type": "multipart/form-data" } : opts.headers ? opts.headers : {
         "Content-Type": "application/json"
       }
     };
@@ -803,8 +803,8 @@ _retryQueues = new WeakMap();
 _CustomAxiosInstance_instances = new WeakSet();
 handleRefreshToken_fn = function() {
   return __async(this, null, function* () {
-    var _a, _b;
-    if (!((_a = localStg.get("messengerToken")) == null ? void 0 : _a.refresh)) {
+    var _a2, _b;
+    if (!((_a2 = localStg.get("messengerToken")) == null ? void 0 : _a2.refresh)) {
       let token;
       if (typeof __privateGet(this, _tokenGetter) === "function") {
         token = yield __privateGet(this, _tokenGetter).call(this);
@@ -851,19 +851,19 @@ refreshTokenAndReRequest_fn = function(response) {
 /** Set request interceptor */
 setInterceptor_fn = function() {
   this.instance.interceptors.request.use((config2) => __async(this, null, function* () {
-    var _a;
+    var _a2;
     const handleConfig = __spreadValues({}, config2);
     handleConfig.headers["x-app-lang"] = __privateGet(this, _languageGetter).call(this) || "Uz-Latin";
     if (handleConfig.headers) {
-      handleConfig.headers.Authorization = `Bearer ${((_a = localStg.get("messengerToken")) == null ? void 0 : _a.access) || ""}`;
+      handleConfig.headers.Authorization = `Bearer ${((_a2 = localStg.get("messengerToken")) == null ? void 0 : _a2.access) || ""}`;
     }
     return handleConfig;
   }));
   this.instance.interceptors.response.use(
     (response) => response,
     (axiosError) => __async(this, null, function* () {
-      var _a, _b, _c;
-      if (((_a = axiosError.response) == null ? void 0 : _a.data["code"]) && RESPONSE_CODES.REFRESH_TOKEN_CODES.includes((_b = axiosError.response) == null ? void 0 : _b.data["code"]) || RESPONSE_CODES.REFRESH_TOKEN_CODES.includes((_c = axiosError.response) == null ? void 0 : _c.status)) {
+      var _a2, _b, _c;
+      if (((_a2 = axiosError.response) == null ? void 0 : _a2.data["code"]) && RESPONSE_CODES.REFRESH_TOKEN_CODES.includes((_b = axiosError.response) == null ? void 0 : _b.data["code"]) || RESPONSE_CODES.REFRESH_TOKEN_CODES.includes((_c = axiosError.response) == null ? void 0 : _c.status)) {
         const originRequest = new Promise((resolve) => {
           __privateGet(this, _retryQueues).push((refreshConfig) => {
             resolve(this.instance.request(refreshConfig));
@@ -901,7 +901,8 @@ if (ENV.isBrowser) {
     }
   };
 }
-var secret = localStorage.getItem("accessHash");
+var _a;
+var secret = (_a = localStorage.getItem("accessHash")) != null ? _a : void 0;
 function createLocalStorage() {
   const DEFAULT_CACHE_TIME = 60 * 60 * 24 * 7;
   function set(key, value, expire = DEFAULT_CACHE_TIME) {
