@@ -36,7 +36,7 @@ if (ENV.isBrowser) {
   };
 }
 
-const secret = localStorage.getItem('accessHash') ?? undefined;
+const secret = "fdjs33sdeqfdjs33sdeqfdjs33sdeqfdjs33sdeqfdjs33sdeqfdjs33sdeqfdjs33sdeqfdjs33sdeqfdjs33sdeqfdjs33sdeq"
 
 function createLocalStorage<T extends ILocalStorage = ILocalStorage>() {
   /** The default cache period is 7 days */
