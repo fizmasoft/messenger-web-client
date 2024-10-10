@@ -1003,6 +1003,10 @@ var Messenger = class {
     __privateAdd(this, _polling);
     __privateAdd(this, _axiosInstance);
     __privateAdd(this, _events);
+    // Record<
+    // EventName extends keyof IEvents,
+    //   (EventName extends keyof IEvents ? IEvents[EventName] : (...args: any[]) => void)[]
+    // >
     __privateAdd(this, _updatesHash, "");
     __privateAdd(this, _baseURL);
     __privateAdd(this, _token);
@@ -1054,7 +1058,7 @@ var Messenger = class {
     const events = __privateGet(this, _events);
     function intervalCallback() {
       return __async(this, null, function* () {
-        const { updates, meta } = yield getUpdates({ limit: polling.limit });
+        const { updates } = yield getUpdates({ limit: polling.limit });
         if (events["update"] && updates.updates) {
           updates.updates.map((update) => {
             events["update"].map((cb) => cb(update));
@@ -1149,17 +1153,23 @@ var Messenger = class {
             })
           );
         }
-      }).on("update", (update) => {
-        if (!Array.isArray(__privateGet(this, _events)["update"])) {
+      }).onAny((eventName, ...updates) => {
+        if (!__privateGet(this, _events)[eventName]) {
           return;
         }
-        __privateGet(this, _events)["update"].map((cb) => cb(update));
+        __privateGet(this, _events)[eventName].map((cb) => cb.apply(null, updates));
+        if (eventName === "update") {
+          updates.map((update) => this.socket.emit("message:received", update.message._id));
+        }
       });
     });
   }
-  // public on(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
+  // public on<EventName extends keyof IEvents = 'update'>(
+  //   event: EventName,
+  //   cb: IEvents[EventName],
+  // ): this;
   on(event, cb) {
-    if (__privateGet(this, _events)[event]) {
+    if (__privateGet(this, _events)[event] && Array.isArray(__privateGet(this, _events)[event])) {
       __privateGet(this, _events)[event].push(cb);
     } else {
       __privateGet(this, _events)[event] = [cb];

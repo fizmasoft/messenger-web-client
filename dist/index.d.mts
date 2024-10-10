@@ -335,7 +335,7 @@ interface IEvents {
     }) => void;
 }
 
-declare class Messenger<Ev extends string = keyof IEvents> {
+declare class Messenger {
     #private;
     uid: string;
     socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
@@ -343,10 +343,10 @@ declare class Messenger<Ev extends string = keyof IEvents> {
     close(): void;
     private initPolling;
     init(): Promise<Socket<DefaultEventsMap, DefaultEventsMap> | this>;
-    on(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
+    on<EventName extends keyof IEvents = 'update'>(event: EventName, cb: IEvents[EventName]): this;
     eventNames(): string[];
-    removeAllListeners(event?: Ev): this;
-    removeListener(event: Ev, callback: any): this;
+    removeAllListeners(event?: keyof IEvents): this;
+    removeListener(event: keyof IEvents, callback: any): this;
     /**
      *
      * @param search id or username
@@ -408,7 +408,7 @@ declare class Messenger<Ev extends string = keyof IEvents> {
     }): Promise<MyApiResponse<IChat>>;
     ping(): this;
 }
-declare function getMessenger(customOptions: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>): Messenger<keyof IEvents>;
+declare function getMessenger(customOptions: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>): Messenger;
 
 /**
  * Encrypt data

@@ -40,11 +40,18 @@ const requiredHeaders = {
   'x-app-uid': uid,
 };
 
-class Messenger<Ev extends string = keyof IEvents> {
+class Messenger {
   #pollingInterval: NodeJS.Timer;
   readonly #polling: IPollingOptions;
   readonly #axiosInstance: AxiosInstance;
-  #events: Partial<Record<Ev, ((...args: any) => void)[]>>;
+
+  #events: Partial<{
+    [EventName in keyof IEvents]: IEvents[EventName][];
+  }>;
+  // Record<
+  // EventName extends keyof IEvents,
+  //   (EventName extends keyof IEvents ? IEvents[EventName] : (...args: any[]) => void)[]
+  // >
   #updatesHash: string = '';
   readonly #baseURL: string;
   #token: { access: string; refresh: string };
@@ -116,7 +123,7 @@ class Messenger<Ev extends string = keyof IEvents> {
     const polling = this.#polling;
     const events = this.#events;
     async function intervalCallback() {
-      const { updates, meta } = await getUpdates({ limit: polling.limit });
+      const { updates } = await getUpdates({ limit: polling.limit });
       if (events['update'] && updates.updates) {
         updates.updates.map((update) => {
           events['update'].map((cb) => cb(update));
@@ -230,25 +237,28 @@ class Messenger<Ev extends string = keyof IEvents> {
           );
         }
       })
-      .on('update', (update) => {
-        if (!Array.isArray(this.#events['update'])) {
+      .onAny((eventName, ...updates) => {
+        if (!this.#events[eventName]) {
           return;
         }
-        this.#events['update'].map((cb) => cb(update));
+
+        this.#events[eventName].map((cb: (...args: any) => void) => cb.apply(null, updates));
+        if (eventName === 'update') {
+          updates.map((update) => this.socket.emit('message:received', update.message._id));
+        }
       });
   }
 
-  // public on(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this;
-  on(event: Ev, cb: Ev extends keyof IEvents ? IEvents[Ev] : (...args: any[]) => void): this {
-    if (this.#events[event]) {
+  // public on<EventName extends keyof IEvents = 'update'>(
+  //   event: EventName,
+  //   cb: IEvents[EventName],
+  // ): this;
+  on<EventName extends keyof IEvents = 'update'>(event: EventName, cb: IEvents[EventName]): this {
+    if (this.#events[event] && Array.isArray(this.#events[event])) {
       this.#events[event].push(cb);
     } else {
-      this.#events[event] = [cb];
+      this.#events[event] = [cb] as any;
     }
-    // let a: Record<keyof IEvents, (...args: any) => void>;
-    // if (this.socket) {
-    //   this.socket.on(event, cb as any);
-    // }
 
     return this;
   }
@@ -257,7 +267,7 @@ class Messenger<Ev extends string = keyof IEvents> {
     return Object.keys(this.#events);
   }
 
-  public removeAllListeners(event?: Ev): this {
+  public removeAllListeners(event?: keyof IEvents): this {
     if (event) {
       this.#events[event] = [];
       return;
@@ -267,7 +277,7 @@ class Messenger<Ev extends string = keyof IEvents> {
     return this;
   }
 
-  public removeListener(event: Ev, callback: any): this {
+  public removeListener(event: keyof IEvents, callback: any): this {
     if (!this.#events[event] || !Array.isArray(this.#events[event])) {
       return;
     }
@@ -366,7 +376,6 @@ class Messenger<Ev extends string = keyof IEvents> {
 
   public async getUpdates({
     limit = this.#polling.limit,
-    page = 1,
     allowedUpdates = [],
   }: {
     limit?: number;
@@ -387,7 +396,7 @@ class Messenger<Ev extends string = keyof IEvents> {
     meta: any;
   }> {
     const { data } = await this.#axiosInstance
-      .get(`/v1/users/updates?page=${page}&limit=${limit}&hash=${this.#updatesHash}`)
+      .get(`/v1/users/updates?limit=${limit}&hash=${this.#updatesHash}`)
       .catch(() => ({
         data: {
           data: [],
