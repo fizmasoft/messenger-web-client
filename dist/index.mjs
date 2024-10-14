@@ -1064,14 +1064,18 @@ var Messenger = class {
         __privateSet(this, _token, __privateGet(this, _tokenGetter2));
       }
       localStg.set("messengerToken", __privateGet(this, _token));
+      const { data: me } = yield __privateGet(this, _axiosInstance).get("/v1/auth/me").catch((err) => ({ data: { success: false } }));
+      if (me.success) {
+        this.user = me.data;
+      }
+      console.log(this.user);
       if (__privateGet(this, _polling) === null) {
         this.socket = io(__privateGet(this, _baseURL), {
           path: "/messenger",
-          autoConnect: false,
           auth: (cb) => cb(__spreadProps(__spreadValues({}, requiredHeaders), {
             token: __privateGet(this, _token).access
-          })),
-          extraHeaders: __spreadProps(__spreadValues({}, requiredHeaders), { token: __privateGet(this, _token).access })
+          }))
+          // extraHeaders: { ...requiredHeaders, token: this.#token.access },
         });
       }
       if (__privateGet(this, _polling)) {
@@ -1246,10 +1250,9 @@ var Messenger = class {
   getUpdates() {
     return __async(this, arguments, function* ({
       limit = __privateGet(this, _polling).limit,
-      page = 1,
       allowedUpdates = []
     } = {}) {
-      const { data } = yield __privateGet(this, _axiosInstance).get(`/v1/users/updates?page=${page}&limit=${limit}&hash=${__privateGet(this, _updatesHash)}`).catch(() => ({
+      const { data } = yield __privateGet(this, _axiosInstance).get(`/v1/users/updates?limit=${limit}&hash=${__privateGet(this, _updatesHash)}`).catch(() => ({
         data: {
           data: [],
           meta: {

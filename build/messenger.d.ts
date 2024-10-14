@@ -10,6 +10,18 @@ import { IUser } from './types/api/user';
 import { CustomOptions, IEvents } from './types/types';
 declare class Messenger {
     #private;
+    user: {
+        _id: string;
+        image: string;
+        firstName: string;
+        lastName: string;
+        middleName: string;
+        email: string | null;
+        username: string;
+        phoneNumber: string;
+        birthday: string | null;
+        deviceUid: string | null;
+    };
     uid: string;
     socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
     constructor({ baseURL, token, polling, languageGetter, headers, }: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>);
@@ -51,7 +63,7 @@ declare class Messenger {
         limit?: number;
         page?: number;
     }): Promise<unknown[]>;
-    getUpdates({ limit, page, allowedUpdates, }?: {
+    getUpdates({ limit, allowedUpdates, }?: {
         limit?: number;
         page?: number;
         allowedUpdates?: MessageType[];

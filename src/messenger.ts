@@ -45,6 +45,25 @@ class Messenger {
   readonly #polling: IPollingOptions;
   readonly #axiosInstance: AxiosInstance;
 
+  user: {
+    _id: string;
+    image: string;
+    firstName: string;
+    lastName: string;
+    middleName: string;
+    email: string | null;
+    username: string;
+    phoneNumber: string;
+    birthday: string | null;
+    deviceUid: string | null;
+    // position: null;
+    // group: null;
+    // mfy: null;
+    // gom: null;
+    // district: null;
+    // divisionId: null;
+  };
+
   #events: Partial<{
     [EventName in keyof IEvents]: IEvents[EventName][];
   }>;
@@ -154,16 +173,23 @@ class Messenger {
     }
     localStg.set('messengerToken', this.#token);
 
+    const { data: me } = await this.#axiosInstance
+      .get('/v1/auth/me')
+      .catch((err) => ({ data: { success: false } }));
+    if (me.success) {
+      this.user = me.data;
+    }
+    console.log(this.user);
+
     if (this.#polling === null) {
       this.socket = io(this.#baseURL, {
         path: '/messenger',
-        autoConnect: false,
         auth: (cb) =>
           cb({
             ...requiredHeaders,
             token: this.#token.access,
           }),
-        extraHeaders: { ...requiredHeaders, token: this.#token.access },
+        // extraHeaders: { ...requiredHeaders, token: this.#token.access },
       });
     }
 
