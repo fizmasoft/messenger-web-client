@@ -1014,7 +1014,7 @@ var Messenger = class {
     this.uid = uid;
     __privateSet(this, _polling, polling);
     __privateSet(this, _baseURL, baseURL);
-    __privateSet(this, _events, {});
+    __privateSet(this, _events, { update: [], updateUser: [], updateMessage: [] });
     __privateSet(this, _token, { access: "", refresh: "" });
     __privateSet(this, _tokenGetter2, token);
     __privateSet(this, _axiosInstance, new CustomAxiosInstance(
@@ -1158,13 +1158,24 @@ var Messenger = class {
           );
         }
       }).onAny((eventName, ...updates) => {
+        switch (eventName) {
+          case "message:new":
+            updates.map((update) => this.socket.emit("message:received", update.message._id));
+            __privateGet(this, _events).update.map((cb) => cb.apply(null, updates));
+            return;
+          case "message:read":
+            __privateGet(this, _events).updateMessage.map((cb) => cb.apply(null, updates));
+            return;
+          case "user:update":
+            __privateGet(this, _events).updateUser.map((cb) => cb.apply(null, updates));
+            return;
+          default:
+            break;
+        }
         if (!__privateGet(this, _events)[eventName]) {
           return;
         }
         __privateGet(this, _events)[eventName].map((cb) => cb.apply(null, updates));
-        if (eventName === "update") {
-          updates.map((update) => this.socket.emit("message:received", update.message._id));
-        }
       });
     });
   }
