@@ -94,7 +94,7 @@ class Messenger {
     this.uid = uid;
     this.#polling = polling;
     this.#baseURL = baseURL;
-    this.#events = {};
+    this.#events = { update: [], updateUser: [], updateMessage: [] };
     this.#token = { access: '', refresh: '' };
     this.#tokenGetter = token;
     this.#axiosInstance = new CustomAxiosInstance(
@@ -264,14 +264,28 @@ class Messenger {
         }
       })
       .onAny((eventName, ...updates) => {
+        switch (eventName) {
+          case 'message:new':
+            // ! buni keyin olib tashlash kerak
+            updates.map((update) => this.socket.emit('message:received', update.message._id));
+            this.#events.update.map((cb: (...args: any) => void) => cb.apply(null, updates));
+            return;
+          case 'message:read':
+            this.#events.updateMessage.map((cb: (...args: any) => void) => cb.apply(null, updates));
+            return;
+          case 'user:update':
+            this.#events.updateUser.map((cb: (...args: any) => void) => cb.apply(null, updates));
+            return;
+
+          default:
+            break;
+        }
+
         if (!this.#events[eventName]) {
           return;
         }
 
         this.#events[eventName].map((cb: (...args: any) => void) => cb.apply(null, updates));
-        if (eventName === 'update') {
-          updates.map((update) => this.socket.emit('message:received', update.message._id));
-        }
       });
   }
 
