@@ -179,7 +179,6 @@ class Messenger {
     if (me.success) {
       this.user = me.data;
     }
-    console.log(this.user);
 
     if (this.#polling === null) {
       this.socket = io(this.#baseURL, {
@@ -189,6 +188,8 @@ class Messenger {
             ...requiredHeaders,
             token: this.#token.access,
           }),
+        autoConnect: true,
+        reconnection: true,
         // extraHeaders: { ...requiredHeaders, token: this.#token.access },
       });
     }

@@ -1090,13 +1090,14 @@ var Messenger = class {
       if (me.success) {
         this.user = me.data;
       }
-      console.log(this.user);
       if (__privateGet(this, _polling) === null) {
         this.socket = (0, import_socket.io)(__privateGet(this, _baseURL), {
           path: "/messenger",
           auth: (cb) => cb(__spreadProps(__spreadValues({}, requiredHeaders), {
             token: __privateGet(this, _token).access
-          }))
+          })),
+          autoConnect: true,
+          reconnection: true
           // extraHeaders: { ...requiredHeaders, token: this.#token.access },
         });
       }
