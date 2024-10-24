@@ -189,7 +189,10 @@ class Messenger {
             token: this.#token.access,
           }),
         autoConnect: true,
-        reconnection: true,
+        reconnection: true, // default setting at present
+        reconnectionDelay: 1000, // default setting at present
+        reconnectionDelayMax: 5000, // default setting at present
+        reconnectionAttempts: Infinity, // default setting at present
         // extraHeaders: { ...requiredHeaders, token: this.#token.access },
       });
     }
@@ -206,14 +209,15 @@ class Messenger {
       }
       return this;
     }
+    const events = this.#events;
 
     return this.socket
       .connect()
       .on('connect', () => {
-        if (!Array.isArray(this.#events['connect'])) {
+        if (!Array.isArray(events['connect'])) {
           return;
         }
-        this.#events['connect'].map((cb) =>
+        events['connect'].map((cb) =>
           cb({
             message: `Socket successfully connected. socket.id: ${this.socket.id}`,
             socket: this.socket,
@@ -221,11 +225,11 @@ class Messenger {
         );
       })
       .on('disconnect', (reason, details) => {
-        if (!Array.isArray(this.#events['disconnect'])) {
+        if (!Array.isArray(events['disconnect'])) {
           return;
         }
 
-        this.#events['disconnect'].map((cb) =>
+        events['disconnect'].map((cb) =>
           cb({
             reason,
             details,
@@ -237,22 +241,19 @@ class Messenger {
         );
       })
       .on('connect_error', (err) => {
-        if (
-          !this.#events['socketConnectionError'] ||
-          !Array.isArray(this.#events['socketConnectionError'])
-        ) {
+        if (!events['socketConnectionError'] || !Array.isArray(events['socketConnectionError'])) {
           return;
         }
 
         if (this.socket.active) {
-          this.#events['socketConnectionError'].map((cb) =>
+          events['socketConnectionError'].map((cb) =>
             cb({
               message: 'temporary failure, the socket will automatically try to reconnect',
               error: err,
             }),
           );
         } else {
-          this.#events['socketConnectionError'].map((cb) =>
+          events['socketConnectionError'].map((cb) =>
             cb({
               message: `
                 the connection was denied by the server
@@ -269,24 +270,24 @@ class Messenger {
           case 'message:new':
             // ! buni keyin olib tashlash kerak
             updates.map((update) => this.socket.emit('message:received', update.message._id));
-            this.#events.update.map((cb: (...args: any) => void) => cb.apply(null, updates));
+            events.update.map((cb: (...args: any) => void) => cb.apply(null, updates));
             return;
           case 'message:read':
-            this.#events.updateMessage.map((cb: (...args: any) => void) => cb.apply(null, updates));
+            events.updateMessage.map((cb: (...args: any) => void) => cb.apply(null, updates));
             return;
           case 'user:update':
-            this.#events.updateUser.map((cb: (...args: any) => void) => cb.apply(null, updates));
+            events.updateUser.map((cb: (...args: any) => void) => cb.apply(null, updates));
             return;
 
           default:
             break;
         }
 
-        if (!this.#events[eventName]) {
+        if (!events[eventName]) {
           return;
         }
 
-        this.#events[eventName].map((cb: (...args: any) => void) => cb.apply(null, updates));
+        events[eventName].map((cb: (...args: any) => void) => cb.apply(null, updates));
       });
   }
 

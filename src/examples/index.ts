@@ -7,7 +7,8 @@ import { IOnUpdate } from '../types/api/message.types';
 import { DeviceTypesEnum } from '../types/types';
 import { localStg } from '../utils';
 
-const baseURL = 'http://localhost:7000';
+const baseURL = 'https://api.connect.iibbqalqon.uz';
+// const baseURL = 'http://localhost:7000';
 const localUid = localStg.get('messengerDeviceUid');
 const uid = localUid ? localUid : uuidV1();
 localStg.set('messengerDeviceUid', uid);
@@ -83,7 +84,12 @@ messenger
     console.log('reconnect', args);
   })
   .on('disconnect', ({ reason, details }) => {
-    console.log('disconnect', reason);
+    console.log('disconnect', reason, details);
+    setTimeout(() => {
+      console.log(messenger.socket.connected, messenger.socket.disconnected, 1);
+
+      messenger.socket.connect();
+    }, 5000);
   })
   .on('pong', () => {
     console.log('pong');
