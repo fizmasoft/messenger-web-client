@@ -11,7 +11,7 @@ import { ChatType, IChat } from './types/api/chat';
 import { IMessage, ISendMessage, ISendMessageToArea } from './types/api/message';
 import { IOnUpdate, MessageType } from './types/api/message.types';
 import { IUser } from './types/api/user';
-import { CustomOptions, DeviceTypesEnum, IEvents, IPollingOptions } from './types/types';
+import { CustomOptions, DeviceTypesEnum, IEvents, IPollingOptions, ISocketOptions } from './types/types';
 import { CustomAxiosInstance, localStg } from './utils';
 
 const localUid = localStg.get('messengerDeviceUid');
@@ -33,8 +33,8 @@ const requiredHeaders = {
   'x-device-model': ENV.isBrowser
     ? `${navigator.userAgent} | ${navigator.platform}`
     : ENV.isNode
-    ? `${process.platform} | ${process.arch} | Nodejs: ${process.version}`
-    : 'Unknown', // dynamically fetching device model info
+      ? `${process.platform} | ${process.arch} | Nodejs: ${process.version}`
+      : 'Unknown', // dynamically fetching device model info
   // 'x-app-lang': (languageGetter() || 'Uz-Latin') as I18nType.LangType, // dynamically fetching language info
   'x-app-version': appVersion,
   'x-app-uid': uid,
@@ -43,6 +43,7 @@ const requiredHeaders = {
 class Messenger {
   #pollingInterval: NodeJS.Timer;
   readonly #polling: IPollingOptions;
+  readonly #socket: ISocketOptions;
   readonly #axiosInstance: AxiosInstance;
 
   user: {
@@ -86,6 +87,7 @@ class Messenger {
       baseURL,
       token,
       polling = null,
+      socket = null,
       languageGetter = () => 'Uz-Latin',
       headers = {},
     }: CustomOptions,
@@ -93,6 +95,7 @@ class Messenger {
   ) {
     this.uid = uid;
     this.#polling = polling;
+    this.#socket = socket;
     this.#baseURL = baseURL;
     this.#events = { update: [], updateUser: [], updateMessage: [] };
     this.#token = { access: '', refresh: '' };
@@ -179,10 +182,12 @@ class Messenger {
     if (me.success) {
       this.user = me.data;
     }
+    console.log(this.#socket.baseUrl);
+    // await new Promise(res => setTimeout(() => res(1), 2000))
 
-    if (this.#polling === null) {
-      this.socket = io(this.#baseURL, {
-        path: '/messenger',
+    if (this.#socket !== null) {
+      this.socket = io(this.#socket.baseUrl, {
+        path: this.#socket.path,
         auth: (cb) =>
           cb({
             ...requiredHeaders,
@@ -233,9 +238,8 @@ class Messenger {
           cb({
             reason,
             details,
-            message: `Socket disconnected: id: ${
-              this.socket.id
-            }, reason: ${reason}, details: ${JSON.stringify(details)}`,
+            message: `Socket disconnected: id: ${this.socket.id
+              }, reason: ${reason}, details: ${JSON.stringify(details)}`,
             socket: this.socket,
           }),
         );

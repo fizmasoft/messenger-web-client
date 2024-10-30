@@ -7,7 +7,7 @@ import { IOnUpdate } from '../types/api/message.types';
 import { DeviceTypesEnum } from '../types/types';
 import { localStg } from '../utils';
 
-const baseURL = 'https://api.connect.iibbqalqon.uz';
+const baseURL = 'https://navoiy.safecity.uz/connect/api/';
 // const baseURL = 'http://localhost:7000';
 const localUid = localStg.get('messengerDeviceUid');
 const uid = localUid ? localUid : uuidV1();
@@ -39,8 +39,8 @@ const messenger = getMessenger({
         'x-device-model': ENV.isBrowser
           ? `${navigator.userAgent} | ${navigator.platform}`
           : ENV.isNode
-          ? `${process.platform} | ${process.arch} | Nodejs: ${process.version}`
-          : 'Unknown', // dynamically fetching device model info
+            ? `${process.platform} | ${process.arch} | Nodejs: ${process.version}`
+            : 'Unknown', // dynamically fetching device model info
         // 'x-app-lang': (languageGetter() || 'Uz-Latin') as I18nType.LangType, // dynamically fetching language info
         'x-app-version': appVersion,
         'x-app-uid': uid,
@@ -68,6 +68,7 @@ const messenger = getMessenger({
     //   refresh: res.data.data.token.refreshToken,
     // };
   },
+  socket: { baseUrl: `https://navoiy.safecity.uz/`, path: '/connect/api/socket.io/messenger' }
   // polling: { interval: 5_000, limit: 100 },
 });
 

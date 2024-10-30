@@ -24,7 +24,7 @@ declare class Messenger {
     };
     uid: string;
     socket: Socket<DefaultEventsMap, DefaultEventsMap> | null;
-    constructor({ baseURL, token, polling, languageGetter, headers, }: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>);
+    constructor({ baseURL, token, polling, socket, languageGetter, headers, }: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>);
     close(): void;
     private initPolling;
     init(): Promise<Socket<DefaultEventsMap, DefaultEventsMap> | this>;

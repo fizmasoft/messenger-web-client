@@ -15,11 +15,17 @@ export interface IPollingOptions {
   interval: number; // in milliseconds
 }
 
+export interface ISocketOptions {
+  baseUrl: string;
+  path: string;
+}
+
 export type CustomOptions = {
   baseURL: string;
   apiKey: string;
   apiHash: string;
   polling?: IPollingOptions;
+  socket?: ISocketOptions;
   token: { access: string; refresh: string } | (() => Promise<{ access: string; refresh: string }>);
   languageGetter?: () => LangType;
   headers?: Record<string, string>;

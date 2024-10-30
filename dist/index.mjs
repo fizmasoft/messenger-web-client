@@ -968,17 +968,19 @@ var requiredHeaders = {
   "x-app-version": appVersion,
   "x-app-uid": uid
 };
-var _pollingInterval, _polling, _axiosInstance, _events, _updatesHash, _baseURL, _token, _tokenGetter2;
+var _pollingInterval, _polling, _socket, _axiosInstance, _events, _updatesHash, _baseURL, _token, _tokenGetter2;
 var Messenger = class {
   constructor({
     baseURL,
     token,
     polling = null,
+    socket = null,
     languageGetter = () => "Uz-Latin",
     headers = {}
   }, options = {}) {
     __privateAdd(this, _pollingInterval);
     __privateAdd(this, _polling);
+    __privateAdd(this, _socket);
     __privateAdd(this, _axiosInstance);
     __privateAdd(this, _events);
     // Record<
@@ -991,6 +993,7 @@ var Messenger = class {
     __privateAdd(this, _tokenGetter2);
     this.uid = uid;
     __privateSet(this, _polling, polling);
+    __privateSet(this, _socket, socket);
     __privateSet(this, _baseURL, baseURL);
     __privateSet(this, _events, { update: [], updateUser: [], updateMessage: [] });
     __privateSet(this, _token, { access: "", refresh: "" });
@@ -1068,14 +1071,22 @@ var Messenger = class {
       if (me.success) {
         this.user = me.data;
       }
-      if (__privateGet(this, _polling) === null) {
-        this.socket = io(__privateGet(this, _baseURL), {
-          path: "/messenger",
+      console.log(__privateGet(this, _socket).baseUrl);
+      if (__privateGet(this, _socket) !== null) {
+        this.socket = io(__privateGet(this, _socket).baseUrl, {
+          path: __privateGet(this, _socket).path,
           auth: (cb) => cb(__spreadProps(__spreadValues({}, requiredHeaders), {
             token: __privateGet(this, _token).access
           })),
           autoConnect: true,
-          reconnection: true
+          reconnection: true,
+          // default setting at present
+          reconnectionDelay: 1e3,
+          // default setting at present
+          reconnectionDelayMax: 5e3,
+          // default setting at present
+          reconnectionAttempts: Infinity
+          // default setting at present
           // extraHeaders: { ...requiredHeaders, token: this.#token.access },
         });
       }
@@ -1091,21 +1102,22 @@ var Messenger = class {
         }
         return this;
       }
+      const events = __privateGet(this, _events);
       return this.socket.connect().on("connect", () => {
-        if (!Array.isArray(__privateGet(this, _events)["connect"])) {
+        if (!Array.isArray(events["connect"])) {
           return;
         }
-        __privateGet(this, _events)["connect"].map(
+        events["connect"].map(
           (cb) => cb({
             message: `Socket successfully connected. socket.id: ${this.socket.id}`,
             socket: this.socket
           })
         );
       }).on("disconnect", (reason, details) => {
-        if (!Array.isArray(__privateGet(this, _events)["disconnect"])) {
+        if (!Array.isArray(events["disconnect"])) {
           return;
         }
-        __privateGet(this, _events)["disconnect"].map(
+        events["disconnect"].map(
           (cb) => cb({
             reason,
             details,
@@ -1114,18 +1126,18 @@ var Messenger = class {
           })
         );
       }).on("connect_error", (err) => {
-        if (!__privateGet(this, _events)["socketConnectionError"] || !Array.isArray(__privateGet(this, _events)["socketConnectionError"])) {
+        if (!events["socketConnectionError"] || !Array.isArray(events["socketConnectionError"])) {
           return;
         }
         if (this.socket.active) {
-          __privateGet(this, _events)["socketConnectionError"].map(
+          events["socketConnectionError"].map(
             (cb) => cb({
               message: "temporary failure, the socket will automatically try to reconnect",
               error: err
             })
           );
         } else {
-          __privateGet(this, _events)["socketConnectionError"].map(
+          events["socketConnectionError"].map(
             (cb) => cb({
               message: `
                 the connection was denied by the server
@@ -1140,21 +1152,21 @@ var Messenger = class {
         switch (eventName) {
           case "message:new":
             updates.map((update) => this.socket.emit("message:received", update.message._id));
-            __privateGet(this, _events).update.map((cb) => cb.apply(null, updates));
+            events.update.map((cb) => cb.apply(null, updates));
             return;
           case "message:read":
-            __privateGet(this, _events).updateMessage.map((cb) => cb.apply(null, updates));
+            events.updateMessage.map((cb) => cb.apply(null, updates));
             return;
           case "user:update":
-            __privateGet(this, _events).updateUser.map((cb) => cb.apply(null, updates));
+            events.updateUser.map((cb) => cb.apply(null, updates));
             return;
           default:
             break;
         }
-        if (!__privateGet(this, _events)[eventName]) {
+        if (!events[eventName]) {
           return;
         }
-        __privateGet(this, _events)[eventName].map((cb) => cb.apply(null, updates));
+        events[eventName].map((cb) => cb.apply(null, updates));
       });
     });
   }
@@ -1310,6 +1322,7 @@ var Messenger = class {
 };
 _pollingInterval = new WeakMap();
 _polling = new WeakMap();
+_socket = new WeakMap();
 _axiosInstance = new WeakMap();
 _events = new WeakMap();
 _updatesHash = new WeakMap();
