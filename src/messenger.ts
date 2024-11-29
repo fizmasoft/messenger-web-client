@@ -182,8 +182,6 @@ class Messenger {
     if (me.success) {
       this.user = me.data;
     }
-    console.log(this.#socket.baseUrl);
-    // await new Promise(res => setTimeout(() => res(1), 2000))
 
     if (this.#socket !== null) {
       this.socket = io(this.#socket.baseUrl, {
