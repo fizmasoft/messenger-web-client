@@ -1,5 +1,6 @@
+import type { ILocalStorage } from '../../types/storage';
+
 import { ENV } from '../../common/config';
-import { ILocalStorage } from '../../types/storage';
 import { decrypt, encrypt } from '../crypto';
 
 interface StorageData<T> {

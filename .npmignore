@@ -1,0 +1,16 @@
+.vscode
+
+src
+build
+
+install.sh
+nodemon.json
+
+package.json
+package-lock.json
+yarn-error.log
+yarn.lock
+
+
+tsup.config.ts
+tsconfig.json

@@ -1,9 +1,12 @@
+import type { IUserLogin } from '../../types/api/auth';
+import type { LangType } from '../../types/system';
+
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+
 import axios from 'axios';
+
 import { localStg } from '../';
 import { RESPONSE_CODES } from '../../common/constant';
-import { IUserLogin } from '../../types/api/auth';
-import { LangType } from '../../types/system';
 
 type RefreshRequestQueue = (config: AxiosRequestConfig) => void;
 

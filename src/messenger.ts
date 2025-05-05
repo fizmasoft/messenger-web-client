@@ -1,23 +1,27 @@
-import { DefaultEventsMap } from '@socket.io/component-emitter';
-import { AxiosInstance } from 'axios';
-import FormData from 'form-data';
 import type { ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
+import type { DefaultEventsMap } from '@socket.io/component-emitter';
+import type { AxiosInstance } from 'axios';
+import type FormData from 'form-data';
+
+import type { IMessage, ISendMessage, ISendMessageToArea } from './types/api/message';
+import type { MyApiResponse } from './types/api';
+import type { FilterPolygonArea } from './types/api/area.filter';
+import type { ChatType, IChat } from './types/api/chat';
+import type { IOnUpdate, MessageType } from './types/api/message.types';
+import type { IUser } from './types/api/user';
+import type { CustomOptions, IEvents, IPollingOptions, ISocketOptions } from './types/types';
+
 import { io } from 'socket.io-client';
 import { v1 as uuidV1 } from 'uuid';
+
 import { ENV } from './common/config';
-import { MyApiResponse } from './types/api';
-import { FilterPolygonArea } from './types/api/area.filter';
-import { ChatType, IChat } from './types/api/chat';
-import { IMessage, ISendMessage, ISendMessageToArea } from './types/api/message';
-import { IOnUpdate, MessageType } from './types/api/message.types';
-import { IUser } from './types/api/user';
-import { CustomOptions, DeviceTypesEnum, IEvents, IPollingOptions, ISocketOptions } from './types/types';
+import { DeviceTypesEnum } from './types/types';
 import { CustomAxiosInstance, localStg } from './utils';
 
 const localUid = localStg.get('messengerDeviceUid');
 const uid = localUid ? localUid : uuidV1();
 localStg.set('messengerDeviceUid', uid);
-let appVersion = '0.0.0';
+let appVersion = '1.5.6';
 
 // readFile(join(process.cwd() + '/package.json'))
 //   .then((v) => {
@@ -28,17 +32,63 @@ let appVersion = '0.0.0';
 //     console.log(err);
 //   });
 
+const getDeviceModel = (): string => {
+  if (ENV.isBrowser && typeof navigator !== 'undefined') {
+    return `${navigator.userAgent} | ${navigator.platform}`;
+  } else if (ENV.isNode && typeof process !== 'undefined') {
+    return `${process.platform} | ${process.arch} | Nodejs: ${process.version}`;
+  }
+
+  return 'Unknown';
+};
+
 const requiredHeaders = {
   'x-device-type': DeviceTypesEnum.WEB,
-  'x-device-model': ENV.isBrowser
-    ? `${navigator.userAgent} | ${navigator.platform}`
-    : ENV.isNode
-      ? `${process.platform} | ${process.arch} | Nodejs: ${process.version}`
-      : 'Unknown', // dynamically fetching device model info
+  'x-device-model': getDeviceModel(),
   // 'x-app-lang': (languageGetter() || 'Uz-Latin') as I18nType.LangType, // dynamically fetching language info
   'x-app-version': appVersion,
   'x-app-uid': uid,
 };
+
+function queryStringify(obj: Record<string, any>, parentKey?: string): string {
+  if (!obj) {
+    return '';
+  }
+
+  return Object.keys(obj)
+    .map((key) => {
+      console.log(key, obj[key]);
+      if (Array.isArray(obj[key])) {
+        if (parentKey) {
+          return obj[key]
+            .map((item) => `${parentKey}[${key}]=${encodeURIComponent(item)}`)
+            .join('&');
+        }
+
+        return obj[key].map((item) => `${key}=${encodeURIComponent(item)}`).join('&');
+      }
+
+      if (typeof obj[key] === 'object') {
+        if (parentKey) {
+          return queryStringify(obj[key], `${parentKey}[${key}]`);
+        }
+
+        return queryStringify(obj[key], key);
+      }
+
+      if (obj[key] === null || obj[key] === undefined) {
+        return null;
+      }
+
+      if (parentKey) {
+        return `${parentKey}[${key}]=${encodeURIComponent(obj[key])}`;
+      }
+
+      return `${key}=${encodeURIComponent(obj[key])}`;
+    })
+    .filter(Boolean)
+    .join('&');
+}
 
 class Messenger {
   #pollingInterval: NodeJS.Timer;
@@ -236,8 +286,9 @@ class Messenger {
           cb({
             reason,
             details,
-            message: `Socket disconnected: id: ${this.socket.id
-              }, reason: ${reason}, details: ${JSON.stringify(details)}`,
+            message: `Socket disconnected: id: ${
+              this.socket.id
+            }, reason: ${reason}, details: ${JSON.stringify(details)}`,
             socket: this.socket,
           }),
         );
@@ -378,14 +429,14 @@ class Messenger {
 
   public async getChatMessages(
     chatId: string,
-    { limit = 20, page = 1, search = '' }: { limit?: number; page?: number; search?: string } = {
+    query: { limit?: number; page?: number; search?: string } & Record<string, any> = {
       limit: 20,
       page: 1,
       search: '',
     },
   ): Promise<MyApiResponse<IMessage>> {
     const { data } = await this.#axiosInstance.get<MyApiResponse<IMessage>>(
-      `/v1/chats/${chatId}/messages?search=${search}&limit=${limit}&page=${page}`,
+      `/v1/chats/${chatId}/messages?${queryStringify(query)}`,
     );
 
     return data;
@@ -465,21 +516,14 @@ class Messenger {
   }
 
   public async getChats(
-    {
-      limit = 100,
-      page = 1,
-      search,
-      type = null,
-    }: {
+    query: {
       limit?: number;
       page?: number;
       search?: string;
       type?: ChatType;
-    } = { limit: 20, page: 1, type: null },
+    } & Record<string, any> = { limit: 20, page: 1, type: null },
   ): Promise<MyApiResponse<IChat>> {
-    const { data } = await this.#axiosInstance.get(
-      `/v1/chats?search=${search}&limit=${limit}&page=${page}${type ? `&type=${type}` : ''}`,
-    );
+    const { data } = await this.#axiosInstance.get(`/v1/chats?${queryStringify(query)}`);
 
     return data;
   }
