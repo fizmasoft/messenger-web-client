@@ -130,7 +130,7 @@
     "node_modules/dotenv/package.json"(exports, module) {
       module.exports = {
         name: "dotenv",
-        version: "16.4.5",
+        version: "16.5.0",
         description: "Loads environment variables from .env file",
         main: "lib/main.js",
         types: "lib/main.d.ts",
@@ -151,10 +151,9 @@
         scripts: {
           "dts-check": "tsc --project tests/types/tsconfig.json",
           lint: "standard",
-          "lint-readme": "standard-markdown",
           pretest: "npm run lint && npm run dts-check",
-          test: "tap tests/*.js --100 -Rspec",
-          "test:coverage": "tap --coverage-report=lcov",
+          test: "tap run --allow-empty-coverage --disable-coverage --timeout=60000",
+          "test:coverage": "tap run --show-full-coverage --timeout=60000 --coverage-report=lcov",
           prerelease: "npm test",
           release: "standard-version"
         },
@@ -162,6 +161,7 @@
           type: "git",
           url: "git://github.com/motdotla/dotenv.git"
         },
+        homepage: "https://github.com/motdotla/dotenv#readme",
         funding: "https://dotenvx.com",
         keywords: [
           "dotenv",
@@ -175,15 +175,12 @@
         readmeFilename: "README.md",
         license: "BSD-2-Clause",
         devDependencies: {
-          "@definitelytyped/dtslint": "^0.0.133",
           "@types/node": "^18.11.3",
-          decache: "^4.6.1",
+          decache: "^4.6.2",
           sinon: "^14.0.1",
           standard: "^17.0.0",
-          "standard-markdown": "^7.1.0",
           "standard-version": "^9.5.0",
-          tap: "^16.3.0",
-          tar: "^6.1.11",
+          tap: "^19.2.0",
           typescript: "^4.8.4"
         },
         engines: {
@@ -202,7 +199,7 @@
       var fs = __require("fs");
       var path = __require("path");
       var os = __require("os");
-      var crypto2 = __require("crypto");
+      var crypto3 = __require("crypto");
       var packageJson = require_package();
       var version = packageJson.version;
       var LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg;
@@ -249,9 +246,6 @@
           }
         }
         return DotenvModule.parse(decrypted);
-      }
-      function _log(message) {
-        console.log(`[dotenv@${version}][INFO] ${message}`);
       }
       function _warn(message) {
         console.log(`[dotenv@${version}][WARN] ${message}`);
@@ -325,7 +319,10 @@
         return envPath[0] === "~" ? path.join(os.homedir(), envPath.slice(1)) : envPath;
       }
       function _configVault(options) {
-        _log("Loading env from encrypted .env.vault");
+        const debug12 = Boolean(options && options.debug);
+        if (debug12) {
+          _debug("Loading env from encrypted .env.vault");
+        }
         const parsed = DotenvModule._parseVault(options);
         let processEnv = process.env;
         if (options && options.processEnv != null) {
@@ -398,7 +395,7 @@
         const authTag = ciphertext.subarray(-16);
         ciphertext = ciphertext.subarray(12, -16);
         try {
-          const aesgcm = crypto2.createDecipheriv("aes-256-gcm", key, nonce);
+          const aesgcm = crypto3.createDecipheriv("aes-256-gcm", key, nonce);
           aesgcm.setAuthTag(authTag);
           return `${aesgcm.update(ciphertext)}${aesgcm.final()}`;
         } catch (error) {
@@ -467,7 +464,7 @@
   var require_delayed_stream = __commonJS({
     "node_modules/delayed-stream/lib/delayed_stream.js"(exports, module) {
       var Stream = __require("stream").Stream;
-      var util2 = __require("util");
+      var util3 = __require("util");
       module.exports = DelayedStream;
       function DelayedStream() {
         this.source = null;
@@ -478,7 +475,7 @@
         this._released = false;
         this._bufferedEvents = [];
       }
-      util2.inherits(DelayedStream, Stream);
+      util3.inherits(DelayedStream, Stream);
       DelayedStream.create = function(source, options) {
         var delayedStream = new this();
         options = options || {};
@@ -557,7 +554,7 @@
   // node_modules/combined-stream/lib/combined_stream.js
   var require_combined_stream = __commonJS({
     "node_modules/combined-stream/lib/combined_stream.js"(exports, module) {
-      var util2 = __require("util");
+      var util3 = __require("util");
       var Stream = __require("stream").Stream;
       var DelayedStream = require_delayed_stream();
       module.exports = CombinedStream;
@@ -573,7 +570,7 @@
         this._insideLoop = false;
         this._pendingNext = false;
       }
-      util2.inherits(CombinedStream, Stream);
+      util3.inherits(CombinedStream, Stream);
       CombinedStream.create = function(options) {
         var combinedStream = new this();
         options = options || {};
@@ -9405,9 +9402,9 @@
       var async = require_async();
       var abort = require_abort();
       module.exports = iterate;
-      function iterate(list, iterator, state, callback) {
+      function iterate(list, iterator2, state, callback) {
         var key = state["keyedList"] ? state["keyedList"][state.index] : state.index;
-        state.jobs[key] = runJob(iterator, key, list[key], function(error, output) {
+        state.jobs[key] = runJob(iterator2, key, list[key], function(error, output) {
           if (!(key in state.jobs)) {
             return;
           }
@@ -9420,12 +9417,12 @@
           callback(error, state.results);
         });
       }
-      function runJob(iterator, key, item, callback) {
+      function runJob(iterator2, key, item, callback) {
         var aborter;
-        if (iterator.length == 2) {
-          aborter = iterator(item, async(callback));
+        if (iterator2.length == 2) {
+          aborter = iterator2(item, async(callback));
         } else {
-          aborter = iterator(item, key, async(callback));
+          aborter = iterator2(item, key, async(callback));
         }
         return aborter;
       }
@@ -9478,10 +9475,10 @@
       var initState = require_state();
       var terminator = require_terminator();
       module.exports = parallel;
-      function parallel(list, iterator, callback) {
+      function parallel(list, iterator2, callback) {
         var state = initState(list);
         while (state.index < (state["keyedList"] || list).length) {
-          iterate(list, iterator, state, function(error, result) {
+          iterate(list, iterator2, state, function(error, result) {
             if (error) {
               callback(error, result);
               return;
@@ -9507,16 +9504,16 @@
       module.exports = serialOrdered;
       module.exports.ascending = ascending;
       module.exports.descending = descending;
-      function serialOrdered(list, iterator, sortMethod, callback) {
+      function serialOrdered(list, iterator2, sortMethod, callback) {
         var state = initState(list, sortMethod);
-        iterate(list, iterator, state, function iteratorHandler(error, result) {
+        iterate(list, iterator2, state, function iteratorHandler(error, result) {
           if (error) {
             callback(error, result);
             return;
           }
           state.index++;
           if (state.index < (state["keyedList"] || list).length) {
-            iterate(list, iterator, state, iteratorHandler);
+            iterate(list, iterator2, state, iteratorHandler);
             return;
           }
           callback(null, state.results);
@@ -9537,8 +9534,8 @@
     "node_modules/asynckit/serial.js"(exports, module) {
       var serialOrdered = require_serialOrdered();
       module.exports = serial;
-      function serial(list, iterator, callback) {
-        return serialOrdered(list, iterator, null, callback);
+      function serial(list, iterator2, callback) {
+        return serialOrdered(list, iterator2, null, callback);
       }
     }
   });
@@ -9550,6 +9547,852 @@
         parallel: require_parallel(),
         serial: require_serial(),
         serialOrdered: require_serialOrdered()
+      };
+    }
+  });
+
+  // node_modules/es-object-atoms/index.js
+  var require_es_object_atoms = __commonJS({
+    "node_modules/es-object-atoms/index.js"(exports, module) {
+      "use strict";
+      module.exports = Object;
+    }
+  });
+
+  // node_modules/es-errors/index.js
+  var require_es_errors = __commonJS({
+    "node_modules/es-errors/index.js"(exports, module) {
+      "use strict";
+      module.exports = Error;
+    }
+  });
+
+  // node_modules/es-errors/eval.js
+  var require_eval = __commonJS({
+    "node_modules/es-errors/eval.js"(exports, module) {
+      "use strict";
+      module.exports = EvalError;
+    }
+  });
+
+  // node_modules/es-errors/range.js
+  var require_range = __commonJS({
+    "node_modules/es-errors/range.js"(exports, module) {
+      "use strict";
+      module.exports = RangeError;
+    }
+  });
+
+  // node_modules/es-errors/ref.js
+  var require_ref = __commonJS({
+    "node_modules/es-errors/ref.js"(exports, module) {
+      "use strict";
+      module.exports = ReferenceError;
+    }
+  });
+
+  // node_modules/es-errors/syntax.js
+  var require_syntax = __commonJS({
+    "node_modules/es-errors/syntax.js"(exports, module) {
+      "use strict";
+      module.exports = SyntaxError;
+    }
+  });
+
+  // node_modules/es-errors/type.js
+  var require_type = __commonJS({
+    "node_modules/es-errors/type.js"(exports, module) {
+      "use strict";
+      module.exports = TypeError;
+    }
+  });
+
+  // node_modules/es-errors/uri.js
+  var require_uri = __commonJS({
+    "node_modules/es-errors/uri.js"(exports, module) {
+      "use strict";
+      module.exports = URIError;
+    }
+  });
+
+  // node_modules/math-intrinsics/abs.js
+  var require_abs = __commonJS({
+    "node_modules/math-intrinsics/abs.js"(exports, module) {
+      "use strict";
+      module.exports = Math.abs;
+    }
+  });
+
+  // node_modules/math-intrinsics/floor.js
+  var require_floor = __commonJS({
+    "node_modules/math-intrinsics/floor.js"(exports, module) {
+      "use strict";
+      module.exports = Math.floor;
+    }
+  });
+
+  // node_modules/math-intrinsics/max.js
+  var require_max = __commonJS({
+    "node_modules/math-intrinsics/max.js"(exports, module) {
+      "use strict";
+      module.exports = Math.max;
+    }
+  });
+
+  // node_modules/math-intrinsics/min.js
+  var require_min = __commonJS({
+    "node_modules/math-intrinsics/min.js"(exports, module) {
+      "use strict";
+      module.exports = Math.min;
+    }
+  });
+
+  // node_modules/math-intrinsics/pow.js
+  var require_pow = __commonJS({
+    "node_modules/math-intrinsics/pow.js"(exports, module) {
+      "use strict";
+      module.exports = Math.pow;
+    }
+  });
+
+  // node_modules/math-intrinsics/round.js
+  var require_round = __commonJS({
+    "node_modules/math-intrinsics/round.js"(exports, module) {
+      "use strict";
+      module.exports = Math.round;
+    }
+  });
+
+  // node_modules/math-intrinsics/isNaN.js
+  var require_isNaN = __commonJS({
+    "node_modules/math-intrinsics/isNaN.js"(exports, module) {
+      "use strict";
+      module.exports = Number.isNaN || function isNaN2(a) {
+        return a !== a;
+      };
+    }
+  });
+
+  // node_modules/math-intrinsics/sign.js
+  var require_sign = __commonJS({
+    "node_modules/math-intrinsics/sign.js"(exports, module) {
+      "use strict";
+      var $isNaN = require_isNaN();
+      module.exports = function sign(number) {
+        if ($isNaN(number) || number === 0) {
+          return number;
+        }
+        return number < 0 ? -1 : 1;
+      };
+    }
+  });
+
+  // node_modules/gopd/gOPD.js
+  var require_gOPD = __commonJS({
+    "node_modules/gopd/gOPD.js"(exports, module) {
+      "use strict";
+      module.exports = Object.getOwnPropertyDescriptor;
+    }
+  });
+
+  // node_modules/gopd/index.js
+  var require_gopd = __commonJS({
+    "node_modules/gopd/index.js"(exports, module) {
+      "use strict";
+      var $gOPD = require_gOPD();
+      if ($gOPD) {
+        try {
+          $gOPD([], "length");
+        } catch (e) {
+          $gOPD = null;
+        }
+      }
+      module.exports = $gOPD;
+    }
+  });
+
+  // node_modules/es-define-property/index.js
+  var require_es_define_property = __commonJS({
+    "node_modules/es-define-property/index.js"(exports, module) {
+      "use strict";
+      var $defineProperty = Object.defineProperty || false;
+      if ($defineProperty) {
+        try {
+          $defineProperty({}, "a", { value: 1 });
+        } catch (e) {
+          $defineProperty = false;
+        }
+      }
+      module.exports = $defineProperty;
+    }
+  });
+
+  // node_modules/has-symbols/shams.js
+  var require_shams = __commonJS({
+    "node_modules/has-symbols/shams.js"(exports, module) {
+      "use strict";
+      module.exports = function hasSymbols() {
+        if (typeof Symbol !== "function" || typeof Object.getOwnPropertySymbols !== "function") {
+          return false;
+        }
+        if (typeof Symbol.iterator === "symbol") {
+          return true;
+        }
+        var obj = {};
+        var sym = Symbol("test");
+        var symObj = Object(sym);
+        if (typeof sym === "string") {
+          return false;
+        }
+        if (Object.prototype.toString.call(sym) !== "[object Symbol]") {
+          return false;
+        }
+        if (Object.prototype.toString.call(symObj) !== "[object Symbol]") {
+          return false;
+        }
+        var symVal = 42;
+        obj[sym] = symVal;
+        for (var _ in obj) {
+          return false;
+        }
+        if (typeof Object.keys === "function" && Object.keys(obj).length !== 0) {
+          return false;
+        }
+        if (typeof Object.getOwnPropertyNames === "function" && Object.getOwnPropertyNames(obj).length !== 0) {
+          return false;
+        }
+        var syms = Object.getOwnPropertySymbols(obj);
+        if (syms.length !== 1 || syms[0] !== sym) {
+          return false;
+        }
+        if (!Object.prototype.propertyIsEnumerable.call(obj, sym)) {
+          return false;
+        }
+        if (typeof Object.getOwnPropertyDescriptor === "function") {
+          var descriptor = (
+            /** @type {PropertyDescriptor} */
+            Object.getOwnPropertyDescriptor(obj, sym)
+          );
+          if (descriptor.value !== symVal || descriptor.enumerable !== true) {
+            return false;
+          }
+        }
+        return true;
+      };
+    }
+  });
+
+  // node_modules/has-symbols/index.js
+  var require_has_symbols = __commonJS({
+    "node_modules/has-symbols/index.js"(exports, module) {
+      "use strict";
+      var origSymbol = typeof Symbol !== "undefined" && Symbol;
+      var hasSymbolSham = require_shams();
+      module.exports = function hasNativeSymbols() {
+        if (typeof origSymbol !== "function") {
+          return false;
+        }
+        if (typeof Symbol !== "function") {
+          return false;
+        }
+        if (typeof origSymbol("foo") !== "symbol") {
+          return false;
+        }
+        if (typeof Symbol("bar") !== "symbol") {
+          return false;
+        }
+        return hasSymbolSham();
+      };
+    }
+  });
+
+  // node_modules/get-proto/Reflect.getPrototypeOf.js
+  var require_Reflect_getPrototypeOf = __commonJS({
+    "node_modules/get-proto/Reflect.getPrototypeOf.js"(exports, module) {
+      "use strict";
+      module.exports = typeof Reflect !== "undefined" && Reflect.getPrototypeOf || null;
+    }
+  });
+
+  // node_modules/get-proto/Object.getPrototypeOf.js
+  var require_Object_getPrototypeOf = __commonJS({
+    "node_modules/get-proto/Object.getPrototypeOf.js"(exports, module) {
+      "use strict";
+      var $Object = require_es_object_atoms();
+      module.exports = $Object.getPrototypeOf || null;
+    }
+  });
+
+  // node_modules/function-bind/implementation.js
+  var require_implementation = __commonJS({
+    "node_modules/function-bind/implementation.js"(exports, module) {
+      "use strict";
+      var ERROR_MESSAGE = "Function.prototype.bind called on incompatible ";
+      var toStr = Object.prototype.toString;
+      var max = Math.max;
+      var funcType = "[object Function]";
+      var concatty = function concatty2(a, b) {
+        var arr = [];
+        for (var i = 0; i < a.length; i += 1) {
+          arr[i] = a[i];
+        }
+        for (var j = 0; j < b.length; j += 1) {
+          arr[j + a.length] = b[j];
+        }
+        return arr;
+      };
+      var slicy = function slicy2(arrLike, offset) {
+        var arr = [];
+        for (var i = offset || 0, j = 0; i < arrLike.length; i += 1, j += 1) {
+          arr[j] = arrLike[i];
+        }
+        return arr;
+      };
+      var joiny = function(arr, joiner) {
+        var str = "";
+        for (var i = 0; i < arr.length; i += 1) {
+          str += arr[i];
+          if (i + 1 < arr.length) {
+            str += joiner;
+          }
+        }
+        return str;
+      };
+      module.exports = function bind2(that) {
+        var target = this;
+        if (typeof target !== "function" || toStr.apply(target) !== funcType) {
+          throw new TypeError(ERROR_MESSAGE + target);
+        }
+        var args = slicy(arguments, 1);
+        var bound;
+        var binder = function() {
+          if (this instanceof bound) {
+            var result = target.apply(
+              this,
+              concatty(args, arguments)
+            );
+            if (Object(result) === result) {
+              return result;
+            }
+            return this;
+          }
+          return target.apply(
+            that,
+            concatty(args, arguments)
+          );
+        };
+        var boundLength = max(0, target.length - args.length);
+        var boundArgs = [];
+        for (var i = 0; i < boundLength; i++) {
+          boundArgs[i] = "$" + i;
+        }
+        bound = Function("binder", "return function (" + joiny(boundArgs, ",") + "){ return binder.apply(this,arguments); }")(binder);
+        if (target.prototype) {
+          var Empty = function Empty2() {
+          };
+          Empty.prototype = target.prototype;
+          bound.prototype = new Empty();
+          Empty.prototype = null;
+        }
+        return bound;
+      };
+    }
+  });
+
+  // node_modules/function-bind/index.js
+  var require_function_bind = __commonJS({
+    "node_modules/function-bind/index.js"(exports, module) {
+      "use strict";
+      var implementation = require_implementation();
+      module.exports = Function.prototype.bind || implementation;
+    }
+  });
+
+  // node_modules/call-bind-apply-helpers/functionCall.js
+  var require_functionCall = __commonJS({
+    "node_modules/call-bind-apply-helpers/functionCall.js"(exports, module) {
+      "use strict";
+      module.exports = Function.prototype.call;
+    }
+  });
+
+  // node_modules/call-bind-apply-helpers/functionApply.js
+  var require_functionApply = __commonJS({
+    "node_modules/call-bind-apply-helpers/functionApply.js"(exports, module) {
+      "use strict";
+      module.exports = Function.prototype.apply;
+    }
+  });
+
+  // node_modules/call-bind-apply-helpers/reflectApply.js
+  var require_reflectApply = __commonJS({
+    "node_modules/call-bind-apply-helpers/reflectApply.js"(exports, module) {
+      "use strict";
+      module.exports = typeof Reflect !== "undefined" && Reflect && Reflect.apply;
+    }
+  });
+
+  // node_modules/call-bind-apply-helpers/actualApply.js
+  var require_actualApply = __commonJS({
+    "node_modules/call-bind-apply-helpers/actualApply.js"(exports, module) {
+      "use strict";
+      var bind2 = require_function_bind();
+      var $apply = require_functionApply();
+      var $call = require_functionCall();
+      var $reflectApply = require_reflectApply();
+      module.exports = $reflectApply || bind2.call($call, $apply);
+    }
+  });
+
+  // node_modules/call-bind-apply-helpers/index.js
+  var require_call_bind_apply_helpers = __commonJS({
+    "node_modules/call-bind-apply-helpers/index.js"(exports, module) {
+      "use strict";
+      var bind2 = require_function_bind();
+      var $TypeError = require_type();
+      var $call = require_functionCall();
+      var $actualApply = require_actualApply();
+      module.exports = function callBindBasic(args) {
+        if (args.length < 1 || typeof args[0] !== "function") {
+          throw new $TypeError("a function is required");
+        }
+        return $actualApply(bind2, $call, args);
+      };
+    }
+  });
+
+  // node_modules/dunder-proto/get.js
+  var require_get = __commonJS({
+    "node_modules/dunder-proto/get.js"(exports, module) {
+      "use strict";
+      var callBind = require_call_bind_apply_helpers();
+      var gOPD = require_gopd();
+      var hasProtoAccessor;
+      try {
+        hasProtoAccessor = /** @type {{ __proto__?: typeof Array.prototype }} */
+        [].__proto__ === Array.prototype;
+      } catch (e) {
+        if (!e || typeof e !== "object" || !("code" in e) || e.code !== "ERR_PROTO_ACCESS") {
+          throw e;
+        }
+      }
+      var desc = !!hasProtoAccessor && gOPD && gOPD(
+        Object.prototype,
+        /** @type {keyof typeof Object.prototype} */
+        "__proto__"
+      );
+      var $Object = Object;
+      var $getPrototypeOf = $Object.getPrototypeOf;
+      module.exports = desc && typeof desc.get === "function" ? callBind([desc.get]) : typeof $getPrototypeOf === "function" ? (
+        /** @type {import('./get')} */
+        function getDunder(value2) {
+          return $getPrototypeOf(value2 == null ? value2 : $Object(value2));
+        }
+      ) : false;
+    }
+  });
+
+  // node_modules/get-proto/index.js
+  var require_get_proto = __commonJS({
+    "node_modules/get-proto/index.js"(exports, module) {
+      "use strict";
+      var reflectGetProto = require_Reflect_getPrototypeOf();
+      var originalGetProto = require_Object_getPrototypeOf();
+      var getDunderProto = require_get();
+      module.exports = reflectGetProto ? function getProto(O) {
+        return reflectGetProto(O);
+      } : originalGetProto ? function getProto(O) {
+        if (!O || typeof O !== "object" && typeof O !== "function") {
+          throw new TypeError("getProto: not an object");
+        }
+        return originalGetProto(O);
+      } : getDunderProto ? function getProto(O) {
+        return getDunderProto(O);
+      } : null;
+    }
+  });
+
+  // node_modules/hasown/index.js
+  var require_hasown = __commonJS({
+    "node_modules/hasown/index.js"(exports, module) {
+      "use strict";
+      var call = Function.prototype.call;
+      var $hasOwn = Object.prototype.hasOwnProperty;
+      var bind2 = require_function_bind();
+      module.exports = bind2.call(call, $hasOwn);
+    }
+  });
+
+  // node_modules/get-intrinsic/index.js
+  var require_get_intrinsic = __commonJS({
+    "node_modules/get-intrinsic/index.js"(exports, module) {
+      "use strict";
+      var undefined2;
+      var $Object = require_es_object_atoms();
+      var $Error = require_es_errors();
+      var $EvalError = require_eval();
+      var $RangeError = require_range();
+      var $ReferenceError = require_ref();
+      var $SyntaxError = require_syntax();
+      var $TypeError = require_type();
+      var $URIError = require_uri();
+      var abs = require_abs();
+      var floor = require_floor();
+      var max = require_max();
+      var min = require_min();
+      var pow = require_pow();
+      var round = require_round();
+      var sign = require_sign();
+      var $Function = Function;
+      var getEvalledConstructor = function(expressionSyntax) {
+        try {
+          return $Function('"use strict"; return (' + expressionSyntax + ").constructor;")();
+        } catch (e) {
+        }
+      };
+      var $gOPD = require_gopd();
+      var $defineProperty = require_es_define_property();
+      var throwTypeError = function() {
+        throw new $TypeError();
+      };
+      var ThrowTypeError = $gOPD ? function() {
+        try {
+          arguments.callee;
+          return throwTypeError;
+        } catch (calleeThrows) {
+          try {
+            return $gOPD(arguments, "callee").get;
+          } catch (gOPDthrows) {
+            return throwTypeError;
+          }
+        }
+      }() : throwTypeError;
+      var hasSymbols = require_has_symbols()();
+      var getProto = require_get_proto();
+      var $ObjectGPO = require_Object_getPrototypeOf();
+      var $ReflectGPO = require_Reflect_getPrototypeOf();
+      var $apply = require_functionApply();
+      var $call = require_functionCall();
+      var needsEval = {};
+      var TypedArray = typeof Uint8Array === "undefined" || !getProto ? undefined2 : getProto(Uint8Array);
+      var INTRINSICS = {
+        __proto__: null,
+        "%AggregateError%": typeof AggregateError === "undefined" ? undefined2 : AggregateError,
+        "%Array%": Array,
+        "%ArrayBuffer%": typeof ArrayBuffer === "undefined" ? undefined2 : ArrayBuffer,
+        "%ArrayIteratorPrototype%": hasSymbols && getProto ? getProto([][Symbol.iterator]()) : undefined2,
+        "%AsyncFromSyncIteratorPrototype%": undefined2,
+        "%AsyncFunction%": needsEval,
+        "%AsyncGenerator%": needsEval,
+        "%AsyncGeneratorFunction%": needsEval,
+        "%AsyncIteratorPrototype%": needsEval,
+        "%Atomics%": typeof Atomics === "undefined" ? undefined2 : Atomics,
+        "%BigInt%": typeof BigInt === "undefined" ? undefined2 : BigInt,
+        "%BigInt64Array%": typeof BigInt64Array === "undefined" ? undefined2 : BigInt64Array,
+        "%BigUint64Array%": typeof BigUint64Array === "undefined" ? undefined2 : BigUint64Array,
+        "%Boolean%": Boolean,
+        "%DataView%": typeof DataView === "undefined" ? undefined2 : DataView,
+        "%Date%": Date,
+        "%decodeURI%": decodeURI,
+        "%decodeURIComponent%": decodeURIComponent,
+        "%encodeURI%": encodeURI,
+        "%encodeURIComponent%": encodeURIComponent,
+        "%Error%": $Error,
+        "%eval%": eval,
+        // eslint-disable-line no-eval
+        "%EvalError%": $EvalError,
+        "%Float16Array%": typeof Float16Array === "undefined" ? undefined2 : Float16Array,
+        "%Float32Array%": typeof Float32Array === "undefined" ? undefined2 : Float32Array,
+        "%Float64Array%": typeof Float64Array === "undefined" ? undefined2 : Float64Array,
+        "%FinalizationRegistry%": typeof FinalizationRegistry === "undefined" ? undefined2 : FinalizationRegistry,
+        "%Function%": $Function,
+        "%GeneratorFunction%": needsEval,
+        "%Int8Array%": typeof Int8Array === "undefined" ? undefined2 : Int8Array,
+        "%Int16Array%": typeof Int16Array === "undefined" ? undefined2 : Int16Array,
+        "%Int32Array%": typeof Int32Array === "undefined" ? undefined2 : Int32Array,
+        "%isFinite%": isFinite,
+        "%isNaN%": isNaN,
+        "%IteratorPrototype%": hasSymbols && getProto ? getProto(getProto([][Symbol.iterator]())) : undefined2,
+        "%JSON%": typeof JSON === "object" ? JSON : undefined2,
+        "%Map%": typeof Map === "undefined" ? undefined2 : Map,
+        "%MapIteratorPrototype%": typeof Map === "undefined" || !hasSymbols || !getProto ? undefined2 : getProto((/* @__PURE__ */ new Map())[Symbol.iterator]()),
+        "%Math%": Math,
+        "%Number%": Number,
+        "%Object%": $Object,
+        "%Object.getOwnPropertyDescriptor%": $gOPD,
+        "%parseFloat%": parseFloat,
+        "%parseInt%": parseInt,
+        "%Promise%": typeof Promise === "undefined" ? undefined2 : Promise,
+        "%Proxy%": typeof Proxy === "undefined" ? undefined2 : Proxy,
+        "%RangeError%": $RangeError,
+        "%ReferenceError%": $ReferenceError,
+        "%Reflect%": typeof Reflect === "undefined" ? undefined2 : Reflect,
+        "%RegExp%": RegExp,
+        "%Set%": typeof Set === "undefined" ? undefined2 : Set,
+        "%SetIteratorPrototype%": typeof Set === "undefined" || !hasSymbols || !getProto ? undefined2 : getProto((/* @__PURE__ */ new Set())[Symbol.iterator]()),
+        "%SharedArrayBuffer%": typeof SharedArrayBuffer === "undefined" ? undefined2 : SharedArrayBuffer,
+        "%String%": String,
+        "%StringIteratorPrototype%": hasSymbols && getProto ? getProto(""[Symbol.iterator]()) : undefined2,
+        "%Symbol%": hasSymbols ? Symbol : undefined2,
+        "%SyntaxError%": $SyntaxError,
+        "%ThrowTypeError%": ThrowTypeError,
+        "%TypedArray%": TypedArray,
+        "%TypeError%": $TypeError,
+        "%Uint8Array%": typeof Uint8Array === "undefined" ? undefined2 : Uint8Array,
+        "%Uint8ClampedArray%": typeof Uint8ClampedArray === "undefined" ? undefined2 : Uint8ClampedArray,
+        "%Uint16Array%": typeof Uint16Array === "undefined" ? undefined2 : Uint16Array,
+        "%Uint32Array%": typeof Uint32Array === "undefined" ? undefined2 : Uint32Array,
+        "%URIError%": $URIError,
+        "%WeakMap%": typeof WeakMap === "undefined" ? undefined2 : WeakMap,
+        "%WeakRef%": typeof WeakRef === "undefined" ? undefined2 : WeakRef,
+        "%WeakSet%": typeof WeakSet === "undefined" ? undefined2 : WeakSet,
+        "%Function.prototype.call%": $call,
+        "%Function.prototype.apply%": $apply,
+        "%Object.defineProperty%": $defineProperty,
+        "%Object.getPrototypeOf%": $ObjectGPO,
+        "%Math.abs%": abs,
+        "%Math.floor%": floor,
+        "%Math.max%": max,
+        "%Math.min%": min,
+        "%Math.pow%": pow,
+        "%Math.round%": round,
+        "%Math.sign%": sign,
+        "%Reflect.getPrototypeOf%": $ReflectGPO
+      };
+      if (getProto) {
+        try {
+          null.error;
+        } catch (e) {
+          errorProto = getProto(getProto(e));
+          INTRINSICS["%Error.prototype%"] = errorProto;
+        }
+      }
+      var errorProto;
+      var doEval = function doEval2(name) {
+        var value2;
+        if (name === "%AsyncFunction%") {
+          value2 = getEvalledConstructor("async function () {}");
+        } else if (name === "%GeneratorFunction%") {
+          value2 = getEvalledConstructor("function* () {}");
+        } else if (name === "%AsyncGeneratorFunction%") {
+          value2 = getEvalledConstructor("async function* () {}");
+        } else if (name === "%AsyncGenerator%") {
+          var fn = doEval2("%AsyncGeneratorFunction%");
+          if (fn) {
+            value2 = fn.prototype;
+          }
+        } else if (name === "%AsyncIteratorPrototype%") {
+          var gen = doEval2("%AsyncGenerator%");
+          if (gen && getProto) {
+            value2 = getProto(gen.prototype);
+          }
+        }
+        INTRINSICS[name] = value2;
+        return value2;
+      };
+      var LEGACY_ALIASES = {
+        __proto__: null,
+        "%ArrayBufferPrototype%": ["ArrayBuffer", "prototype"],
+        "%ArrayPrototype%": ["Array", "prototype"],
+        "%ArrayProto_entries%": ["Array", "prototype", "entries"],
+        "%ArrayProto_forEach%": ["Array", "prototype", "forEach"],
+        "%ArrayProto_keys%": ["Array", "prototype", "keys"],
+        "%ArrayProto_values%": ["Array", "prototype", "values"],
+        "%AsyncFunctionPrototype%": ["AsyncFunction", "prototype"],
+        "%AsyncGenerator%": ["AsyncGeneratorFunction", "prototype"],
+        "%AsyncGeneratorPrototype%": ["AsyncGeneratorFunction", "prototype", "prototype"],
+        "%BooleanPrototype%": ["Boolean", "prototype"],
+        "%DataViewPrototype%": ["DataView", "prototype"],
+        "%DatePrototype%": ["Date", "prototype"],
+        "%ErrorPrototype%": ["Error", "prototype"],
+        "%EvalErrorPrototype%": ["EvalError", "prototype"],
+        "%Float32ArrayPrototype%": ["Float32Array", "prototype"],
+        "%Float64ArrayPrototype%": ["Float64Array", "prototype"],
+        "%FunctionPrototype%": ["Function", "prototype"],
+        "%Generator%": ["GeneratorFunction", "prototype"],
+        "%GeneratorPrototype%": ["GeneratorFunction", "prototype", "prototype"],
+        "%Int8ArrayPrototype%": ["Int8Array", "prototype"],
+        "%Int16ArrayPrototype%": ["Int16Array", "prototype"],
+        "%Int32ArrayPrototype%": ["Int32Array", "prototype"],
+        "%JSONParse%": ["JSON", "parse"],
+        "%JSONStringify%": ["JSON", "stringify"],
+        "%MapPrototype%": ["Map", "prototype"],
+        "%NumberPrototype%": ["Number", "prototype"],
+        "%ObjectPrototype%": ["Object", "prototype"],
+        "%ObjProto_toString%": ["Object", "prototype", "toString"],
+        "%ObjProto_valueOf%": ["Object", "prototype", "valueOf"],
+        "%PromisePrototype%": ["Promise", "prototype"],
+        "%PromiseProto_then%": ["Promise", "prototype", "then"],
+        "%Promise_all%": ["Promise", "all"],
+        "%Promise_reject%": ["Promise", "reject"],
+        "%Promise_resolve%": ["Promise", "resolve"],
+        "%RangeErrorPrototype%": ["RangeError", "prototype"],
+        "%ReferenceErrorPrototype%": ["ReferenceError", "prototype"],
+        "%RegExpPrototype%": ["RegExp", "prototype"],
+        "%SetPrototype%": ["Set", "prototype"],
+        "%SharedArrayBufferPrototype%": ["SharedArrayBuffer", "prototype"],
+        "%StringPrototype%": ["String", "prototype"],
+        "%SymbolPrototype%": ["Symbol", "prototype"],
+        "%SyntaxErrorPrototype%": ["SyntaxError", "prototype"],
+        "%TypedArrayPrototype%": ["TypedArray", "prototype"],
+        "%TypeErrorPrototype%": ["TypeError", "prototype"],
+        "%Uint8ArrayPrototype%": ["Uint8Array", "prototype"],
+        "%Uint8ClampedArrayPrototype%": ["Uint8ClampedArray", "prototype"],
+        "%Uint16ArrayPrototype%": ["Uint16Array", "prototype"],
+        "%Uint32ArrayPrototype%": ["Uint32Array", "prototype"],
+        "%URIErrorPrototype%": ["URIError", "prototype"],
+        "%WeakMapPrototype%": ["WeakMap", "prototype"],
+        "%WeakSetPrototype%": ["WeakSet", "prototype"]
+      };
+      var bind2 = require_function_bind();
+      var hasOwn = require_hasown();
+      var $concat = bind2.call($call, Array.prototype.concat);
+      var $spliceApply = bind2.call($apply, Array.prototype.splice);
+      var $replace = bind2.call($call, String.prototype.replace);
+      var $strSlice = bind2.call($call, String.prototype.slice);
+      var $exec = bind2.call($call, RegExp.prototype.exec);
+      var rePropName = /[^%.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|%$))/g;
+      var reEscapeChar = /\\(\\)?/g;
+      var stringToPath = function stringToPath2(string) {
+        var first = $strSlice(string, 0, 1);
+        var last = $strSlice(string, -1);
+        if (first === "%" && last !== "%") {
+          throw new $SyntaxError("invalid intrinsic syntax, expected closing `%`");
+        } else if (last === "%" && first !== "%") {
+          throw new $SyntaxError("invalid intrinsic syntax, expected opening `%`");
+        }
+        var result = [];
+        $replace(string, rePropName, function(match, number, quote, subString) {
+          result[result.length] = quote ? $replace(subString, reEscapeChar, "$1") : number || match;
+        });
+        return result;
+      };
+      var getBaseIntrinsic = function getBaseIntrinsic2(name, allowMissing) {
+        var intrinsicName = name;
+        var alias;
+        if (hasOwn(LEGACY_ALIASES, intrinsicName)) {
+          alias = LEGACY_ALIASES[intrinsicName];
+          intrinsicName = "%" + alias[0] + "%";
+        }
+        if (hasOwn(INTRINSICS, intrinsicName)) {
+          var value2 = INTRINSICS[intrinsicName];
+          if (value2 === needsEval) {
+            value2 = doEval(intrinsicName);
+          }
+          if (typeof value2 === "undefined" && !allowMissing) {
+            throw new $TypeError("intrinsic " + name + " exists, but is not available. Please file an issue!");
+          }
+          return {
+            alias,
+            name: intrinsicName,
+            value: value2
+          };
+        }
+        throw new $SyntaxError("intrinsic " + name + " does not exist!");
+      };
+      module.exports = function GetIntrinsic(name, allowMissing) {
+        if (typeof name !== "string" || name.length === 0) {
+          throw new $TypeError("intrinsic name must be a non-empty string");
+        }
+        if (arguments.length > 1 && typeof allowMissing !== "boolean") {
+          throw new $TypeError('"allowMissing" argument must be a boolean');
+        }
+        if ($exec(/^%?[^%]*%?$/, name) === null) {
+          throw new $SyntaxError("`%` may not be present anywhere but at the beginning and end of the intrinsic name");
+        }
+        var parts2 = stringToPath(name);
+        var intrinsicBaseName = parts2.length > 0 ? parts2[0] : "";
+        var intrinsic = getBaseIntrinsic("%" + intrinsicBaseName + "%", allowMissing);
+        var intrinsicRealName = intrinsic.name;
+        var value2 = intrinsic.value;
+        var skipFurtherCaching = false;
+        var alias = intrinsic.alias;
+        if (alias) {
+          intrinsicBaseName = alias[0];
+          $spliceApply(parts2, $concat([0, 1], alias));
+        }
+        for (var i = 1, isOwn = true; i < parts2.length; i += 1) {
+          var part = parts2[i];
+          var first = $strSlice(part, 0, 1);
+          var last = $strSlice(part, -1);
+          if ((first === '"' || first === "'" || first === "`" || (last === '"' || last === "'" || last === "`")) && first !== last) {
+            throw new $SyntaxError("property names with quotes must have matching quotes");
+          }
+          if (part === "constructor" || !isOwn) {
+            skipFurtherCaching = true;
+          }
+          intrinsicBaseName += "." + part;
+          intrinsicRealName = "%" + intrinsicBaseName + "%";
+          if (hasOwn(INTRINSICS, intrinsicRealName)) {
+            value2 = INTRINSICS[intrinsicRealName];
+          } else if (value2 != null) {
+            if (!(part in value2)) {
+              if (!allowMissing) {
+                throw new $TypeError("base intrinsic for " + name + " exists, but the property is not available.");
+              }
+              return void undefined2;
+            }
+            if ($gOPD && i + 1 >= parts2.length) {
+              var desc = $gOPD(value2, part);
+              isOwn = !!desc;
+              if (isOwn && "get" in desc && !("originalValue" in desc.get)) {
+                value2 = desc.get;
+              } else {
+                value2 = value2[part];
+              }
+            } else {
+              isOwn = hasOwn(value2, part);
+              value2 = value2[part];
+            }
+            if (isOwn && !skipFurtherCaching) {
+              INTRINSICS[intrinsicRealName] = value2;
+            }
+          }
+        }
+        return value2;
+      };
+    }
+  });
+
+  // node_modules/has-tostringtag/shams.js
+  var require_shams2 = __commonJS({
+    "node_modules/has-tostringtag/shams.js"(exports, module) {
+      "use strict";
+      var hasSymbols = require_shams();
+      module.exports = function hasToStringTagShams() {
+        return hasSymbols() && !!Symbol.toStringTag;
+      };
+    }
+  });
+
+  // node_modules/es-set-tostringtag/index.js
+  var require_es_set_tostringtag = __commonJS({
+    "node_modules/es-set-tostringtag/index.js"(exports, module) {
+      "use strict";
+      var GetIntrinsic = require_get_intrinsic();
+      var $defineProperty = GetIntrinsic("%Object.defineProperty%", true);
+      var hasToStringTag = require_shams2()();
+      var hasOwn = require_hasown();
+      var $TypeError = require_type();
+      var toStringTag2 = hasToStringTag ? Symbol.toStringTag : null;
+      module.exports = function setToStringTag(object, value2) {
+        var overrideIfSet = arguments.length > 2 && !!arguments[2] && arguments[2].force;
+        var nonConfigurable = arguments.length > 2 && !!arguments[2] && arguments[2].nonConfigurable;
+        if (typeof overrideIfSet !== "undefined" && typeof overrideIfSet !== "boolean" || typeof nonConfigurable !== "undefined" && typeof nonConfigurable !== "boolean") {
+          throw new $TypeError("if provided, the `overrideIfSet` and `nonConfigurable` options must be booleans");
+        }
+        if (toStringTag2 && (overrideIfSet || !hasOwn(object, toStringTag2))) {
+          if ($defineProperty) {
+            $defineProperty(object, toStringTag2, {
+              configurable: !nonConfigurable,
+              enumerable: false,
+              value: value2,
+              writable: false
+            });
+          } else {
+            object[toStringTag2] = value2;
+          }
+        }
       };
     }
   });
@@ -9570,7 +10413,7 @@
   var require_form_data = __commonJS({
     "node_modules/form-data/lib/form_data.js"(exports, module) {
       var CombinedStream = require_combined_stream();
-      var util2 = __require("util");
+      var util3 = __require("util");
       var path = __require("path");
       var http3 = __require("http");
       var https3 = __require("https");
@@ -9579,9 +10422,10 @@
       var Stream = __require("stream").Stream;
       var mime = require_mime_types();
       var asynckit = require_asynckit();
+      var setToStringTag = require_es_set_tostringtag();
       var populate = require_populate();
       module.exports = FormData4;
-      util2.inherits(FormData4, CombinedStream);
+      util3.inherits(FormData4, CombinedStream);
       function FormData4(options) {
         if (!(this instanceof FormData4)) {
           return new FormData4(options);
@@ -9628,7 +10472,7 @@
         }
         this._valueLength += valueLength;
         this._overheadLength += Buffer.byteLength(header) + FormData4.LINE_BREAK.length;
-        if (!value2 || !value2.path && !(value2.readable && value2.hasOwnProperty("httpVersion")) && !(value2 instanceof Stream)) {
+        if (!value2 || !value2.path && !(value2.readable && Object.prototype.hasOwnProperty.call(value2, "httpVersion")) && !(value2 instanceof Stream)) {
           return;
         }
         if (!options.knownLength) {
@@ -9636,7 +10480,7 @@
         }
       };
       FormData4.prototype._lengthRetriever = function(value2, callback) {
-        if (value2.hasOwnProperty("fd")) {
+        if (Object.prototype.hasOwnProperty.call(value2, "fd")) {
           if (value2.end != void 0 && value2.end != Infinity && value2.start != void 0) {
             callback(null, value2.end + 1 - (value2.start ? value2.start : 0));
           } else {
@@ -9650,9 +10494,9 @@
               callback(null, fileSize);
             });
           }
-        } else if (value2.hasOwnProperty("httpVersion")) {
+        } else if (Object.prototype.hasOwnProperty.call(value2, "httpVersion")) {
           callback(null, +value2.headers["content-length"]);
-        } else if (value2.hasOwnProperty("httpModule")) {
+        } else if (Object.prototype.hasOwnProperty.call(value2, "httpModule")) {
           value2.on("response", function(response) {
             value2.pause();
             callback(null, +response.headers["content-length"]);
@@ -9680,16 +10524,17 @@
         }
         var header;
         for (var prop in headers) {
-          if (!headers.hasOwnProperty(prop)) continue;
-          header = headers[prop];
-          if (header == null) {
-            continue;
-          }
-          if (!Array.isArray(header)) {
-            header = [header];
-          }
-          if (header.length) {
-            contents += prop + ": " + header.join("; ") + FormData4.LINE_BREAK;
+          if (Object.prototype.hasOwnProperty.call(headers, prop)) {
+            header = headers[prop];
+            if (header == null) {
+              continue;
+            }
+            if (!Array.isArray(header)) {
+              header = [header];
+            }
+            if (header.length) {
+              contents += prop + ": " + header.join("; ") + FormData4.LINE_BREAK;
+            }
           }
         }
         return "--" + this.getBoundary() + FormData4.LINE_BREAK + contents + FormData4.LINE_BREAK;
@@ -9700,7 +10545,7 @@
           filename = path.normalize(options.filepath).replace(/\\/g, "/");
         } else if (options.filename || value2.name || value2.path) {
           filename = path.basename(options.filename || value2.name || value2.path);
-        } else if (value2.readable && value2.hasOwnProperty("httpVersion")) {
+        } else if (value2.readable && Object.prototype.hasOwnProperty.call(value2, "httpVersion")) {
           filename = path.basename(value2.client._httpMessage.path || "");
         }
         if (filename) {
@@ -9716,7 +10561,7 @@
         if (!contentType && value2.path) {
           contentType = mime.lookup(value2.path);
         }
-        if (!contentType && value2.readable && value2.hasOwnProperty("httpVersion")) {
+        if (!contentType && value2.readable && Object.prototype.hasOwnProperty.call(value2, "httpVersion")) {
           contentType = value2.headers["content-type"];
         }
         if (!contentType && (options.filepath || options.filename)) {
@@ -9746,7 +10591,7 @@
           "content-type": "multipart/form-data; boundary=" + this.getBoundary()
         };
         for (header in userHeaders) {
-          if (userHeaders.hasOwnProperty(header)) {
+          if (Object.prototype.hasOwnProperty.call(userHeaders, header)) {
             formHeaders[header.toLowerCase()] = userHeaders[header];
           }
         }
@@ -9877,6 +10722,7 @@
       FormData4.prototype.toString = function() {
         return "[object FormData]";
       };
+      setToStringTag(FormData4, "FormData");
     }
   });
 
@@ -10399,9 +11245,9 @@
     }
   });
 
-  // node_modules/debug/src/common.js
+  // node_modules/engine.io-client/node_modules/debug/src/common.js
   var require_common = __commonJS({
-    "node_modules/debug/src/common.js"(exports, module) {
+    "node_modules/engine.io-client/node_modules/debug/src/common.js"(exports, module) {
       function setup(env) {
         createDebug.debug = createDebug;
         createDebug.default = createDebug;
@@ -10562,9 +11408,9 @@
     }
   });
 
-  // node_modules/debug/src/browser.js
+  // node_modules/engine.io-client/node_modules/debug/src/browser.js
   var require_browser = __commonJS({
-    "node_modules/debug/src/browser.js"(exports, module) {
+    "node_modules/engine.io-client/node_modules/debug/src/browser.js"(exports, module) {
       exports.formatArgs = formatArgs;
       exports.save = save;
       exports.load = load;
@@ -10841,18 +11687,18 @@
     }
   });
 
-  // node_modules/debug/src/node.js
+  // node_modules/engine.io-client/node_modules/debug/src/node.js
   var require_node = __commonJS({
-    "node_modules/debug/src/node.js"(exports, module) {
+    "node_modules/engine.io-client/node_modules/debug/src/node.js"(exports, module) {
       var tty = __require("tty");
-      var util2 = __require("util");
+      var util3 = __require("util");
       exports.init = init;
       exports.log = log;
       exports.formatArgs = formatArgs;
       exports.save = save;
       exports.load = load;
       exports.useColors = useColors;
-      exports.destroy = util2.deprecate(
+      exports.destroy = util3.deprecate(
         () => {
         },
         "Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`."
@@ -10983,7 +11829,7 @@
         return (/* @__PURE__ */ new Date()).toISOString() + " ";
       }
       function log(...args) {
-        return process.stderr.write(util2.formatWithOptions(exports.inspectOpts, ...args) + "\n");
+        return process.stderr.write(util3.formatWithOptions(exports.inspectOpts, ...args) + "\n");
       }
       function save(namespaces) {
         if (namespaces) {
@@ -11006,18 +11852,18 @@
       var { formatters } = module.exports;
       formatters.o = function(v) {
         this.inspectOpts.colors = this.useColors;
-        return util2.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
+        return util3.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
       };
       formatters.O = function(v) {
         this.inspectOpts.colors = this.useColors;
-        return util2.inspect(v, this.inspectOpts);
+        return util3.inspect(v, this.inspectOpts);
       };
     }
   });
 
-  // node_modules/debug/src/index.js
+  // node_modules/engine.io-client/node_modules/debug/src/index.js
   var require_src = __commonJS({
-    "node_modules/debug/src/index.js"(exports, module) {
+    "node_modules/engine.io-client/node_modules/debug/src/index.js"(exports, module) {
       if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
         module.exports = require_browser();
       } else {
@@ -14515,6 +15361,1042 @@
     }
   });
 
+  // node_modules/socket.io-client/node_modules/debug/src/common.js
+  var require_common2 = __commonJS({
+    "node_modules/socket.io-client/node_modules/debug/src/common.js"(exports, module) {
+      function setup(env) {
+        createDebug.debug = createDebug;
+        createDebug.default = createDebug;
+        createDebug.coerce = coerce;
+        createDebug.disable = disable;
+        createDebug.enable = enable;
+        createDebug.enabled = enabled;
+        createDebug.humanize = require_ms();
+        createDebug.destroy = destroy;
+        Object.keys(env).forEach((key) => {
+          createDebug[key] = env[key];
+        });
+        createDebug.names = [];
+        createDebug.skips = [];
+        createDebug.formatters = {};
+        function selectColor(namespace) {
+          let hash = 0;
+          for (let i = 0; i < namespace.length; i++) {
+            hash = (hash << 5) - hash + namespace.charCodeAt(i);
+            hash |= 0;
+          }
+          return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
+        }
+        createDebug.selectColor = selectColor;
+        function createDebug(namespace) {
+          let prevTime;
+          let enableOverride = null;
+          let namespacesCache;
+          let enabledCache;
+          function debug12(...args) {
+            if (!debug12.enabled) {
+              return;
+            }
+            const self2 = debug12;
+            const curr = Number(/* @__PURE__ */ new Date());
+            const ms = curr - (prevTime || curr);
+            self2.diff = ms;
+            self2.prev = prevTime;
+            self2.curr = curr;
+            prevTime = curr;
+            args[0] = createDebug.coerce(args[0]);
+            if (typeof args[0] !== "string") {
+              args.unshift("%O");
+            }
+            let index = 0;
+            args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
+              if (match === "%%") {
+                return "%";
+              }
+              index++;
+              const formatter = createDebug.formatters[format];
+              if (typeof formatter === "function") {
+                const val = args[index];
+                match = formatter.call(self2, val);
+                args.splice(index, 1);
+                index--;
+              }
+              return match;
+            });
+            createDebug.formatArgs.call(self2, args);
+            const logFn = self2.log || createDebug.log;
+            logFn.apply(self2, args);
+          }
+          debug12.namespace = namespace;
+          debug12.useColors = createDebug.useColors();
+          debug12.color = createDebug.selectColor(namespace);
+          debug12.extend = extend2;
+          debug12.destroy = createDebug.destroy;
+          Object.defineProperty(debug12, "enabled", {
+            enumerable: true,
+            configurable: false,
+            get: () => {
+              if (enableOverride !== null) {
+                return enableOverride;
+              }
+              if (namespacesCache !== createDebug.namespaces) {
+                namespacesCache = createDebug.namespaces;
+                enabledCache = createDebug.enabled(namespace);
+              }
+              return enabledCache;
+            },
+            set: (v) => {
+              enableOverride = v;
+            }
+          });
+          if (typeof createDebug.init === "function") {
+            createDebug.init(debug12);
+          }
+          return debug12;
+        }
+        function extend2(namespace, delimiter) {
+          const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
+          newDebug.log = this.log;
+          return newDebug;
+        }
+        function enable(namespaces) {
+          createDebug.save(namespaces);
+          createDebug.namespaces = namespaces;
+          createDebug.names = [];
+          createDebug.skips = [];
+          let i;
+          const split = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
+          const len = split.length;
+          for (i = 0; i < len; i++) {
+            if (!split[i]) {
+              continue;
+            }
+            namespaces = split[i].replace(/\*/g, ".*?");
+            if (namespaces[0] === "-") {
+              createDebug.skips.push(new RegExp("^" + namespaces.slice(1) + "$"));
+            } else {
+              createDebug.names.push(new RegExp("^" + namespaces + "$"));
+            }
+          }
+        }
+        function disable() {
+          const namespaces = [
+            ...createDebug.names.map(toNamespace),
+            ...createDebug.skips.map(toNamespace).map((namespace) => "-" + namespace)
+          ].join(",");
+          createDebug.enable("");
+          return namespaces;
+        }
+        function enabled(name) {
+          if (name[name.length - 1] === "*") {
+            return true;
+          }
+          let i;
+          let len;
+          for (i = 0, len = createDebug.skips.length; i < len; i++) {
+            if (createDebug.skips[i].test(name)) {
+              return false;
+            }
+          }
+          for (i = 0, len = createDebug.names.length; i < len; i++) {
+            if (createDebug.names[i].test(name)) {
+              return true;
+            }
+          }
+          return false;
+        }
+        function toNamespace(regexp) {
+          return regexp.toString().substring(2, regexp.toString().length - 2).replace(/\.\*\?$/, "*");
+        }
+        function coerce(val) {
+          if (val instanceof Error) {
+            return val.stack || val.message;
+          }
+          return val;
+        }
+        function destroy() {
+          console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+        }
+        createDebug.enable(createDebug.load());
+        return createDebug;
+      }
+      module.exports = setup;
+    }
+  });
+
+  // node_modules/socket.io-client/node_modules/debug/src/browser.js
+  var require_browser2 = __commonJS({
+    "node_modules/socket.io-client/node_modules/debug/src/browser.js"(exports, module) {
+      exports.formatArgs = formatArgs;
+      exports.save = save;
+      exports.load = load;
+      exports.useColors = useColors;
+      exports.storage = localstorage();
+      exports.destroy = /* @__PURE__ */ (() => {
+        let warned = false;
+        return () => {
+          if (!warned) {
+            warned = true;
+            console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+          }
+        };
+      })();
+      exports.colors = [
+        "#0000CC",
+        "#0000FF",
+        "#0033CC",
+        "#0033FF",
+        "#0066CC",
+        "#0066FF",
+        "#0099CC",
+        "#0099FF",
+        "#00CC00",
+        "#00CC33",
+        "#00CC66",
+        "#00CC99",
+        "#00CCCC",
+        "#00CCFF",
+        "#3300CC",
+        "#3300FF",
+        "#3333CC",
+        "#3333FF",
+        "#3366CC",
+        "#3366FF",
+        "#3399CC",
+        "#3399FF",
+        "#33CC00",
+        "#33CC33",
+        "#33CC66",
+        "#33CC99",
+        "#33CCCC",
+        "#33CCFF",
+        "#6600CC",
+        "#6600FF",
+        "#6633CC",
+        "#6633FF",
+        "#66CC00",
+        "#66CC33",
+        "#9900CC",
+        "#9900FF",
+        "#9933CC",
+        "#9933FF",
+        "#99CC00",
+        "#99CC33",
+        "#CC0000",
+        "#CC0033",
+        "#CC0066",
+        "#CC0099",
+        "#CC00CC",
+        "#CC00FF",
+        "#CC3300",
+        "#CC3333",
+        "#CC3366",
+        "#CC3399",
+        "#CC33CC",
+        "#CC33FF",
+        "#CC6600",
+        "#CC6633",
+        "#CC9900",
+        "#CC9933",
+        "#CCCC00",
+        "#CCCC33",
+        "#FF0000",
+        "#FF0033",
+        "#FF0066",
+        "#FF0099",
+        "#FF00CC",
+        "#FF00FF",
+        "#FF3300",
+        "#FF3333",
+        "#FF3366",
+        "#FF3399",
+        "#FF33CC",
+        "#FF33FF",
+        "#FF6600",
+        "#FF6633",
+        "#FF9900",
+        "#FF9933",
+        "#FFCC00",
+        "#FFCC33"
+      ];
+      function useColors() {
+        if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
+          return true;
+        }
+        if (typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+          return false;
+        }
+        let m;
+        return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
+        typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
+        // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+        typeof navigator !== "undefined" && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
+        typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
+      }
+      function formatArgs(args) {
+        args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module.exports.humanize(this.diff);
+        if (!this.useColors) {
+          return;
+        }
+        const c = "color: " + this.color;
+        args.splice(1, 0, c, "color: inherit");
+        let index = 0;
+        let lastC = 0;
+        args[0].replace(/%[a-zA-Z%]/g, (match) => {
+          if (match === "%%") {
+            return;
+          }
+          index++;
+          if (match === "%c") {
+            lastC = index;
+          }
+        });
+        args.splice(lastC, 0, c);
+      }
+      exports.log = console.debug || console.log || (() => {
+      });
+      function save(namespaces) {
+        try {
+          if (namespaces) {
+            exports.storage.setItem("debug", namespaces);
+          } else {
+            exports.storage.removeItem("debug");
+          }
+        } catch (error) {
+        }
+      }
+      function load() {
+        let r;
+        try {
+          r = exports.storage.getItem("debug");
+        } catch (error) {
+        }
+        if (!r && typeof process !== "undefined" && "env" in process) {
+          r = process.env.DEBUG;
+        }
+        return r;
+      }
+      function localstorage() {
+        try {
+          return localStorage;
+        } catch (error) {
+        }
+      }
+      module.exports = require_common2()(exports);
+      var { formatters } = module.exports;
+      formatters.j = function(v) {
+        try {
+          return JSON.stringify(v);
+        } catch (error) {
+          return "[UnexpectedJSONParseError]: " + error.message;
+        }
+      };
+    }
+  });
+
+  // node_modules/socket.io-client/node_modules/debug/src/node.js
+  var require_node2 = __commonJS({
+    "node_modules/socket.io-client/node_modules/debug/src/node.js"(exports, module) {
+      var tty = __require("tty");
+      var util3 = __require("util");
+      exports.init = init;
+      exports.log = log;
+      exports.formatArgs = formatArgs;
+      exports.save = save;
+      exports.load = load;
+      exports.useColors = useColors;
+      exports.destroy = util3.deprecate(
+        () => {
+        },
+        "Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`."
+      );
+      exports.colors = [6, 2, 3, 4, 5, 1];
+      try {
+        const supportsColor = require_supports_color();
+        if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
+          exports.colors = [
+            20,
+            21,
+            26,
+            27,
+            32,
+            33,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            56,
+            57,
+            62,
+            63,
+            68,
+            69,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            92,
+            93,
+            98,
+            99,
+            112,
+            113,
+            128,
+            129,
+            134,
+            135,
+            148,
+            149,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165,
+            166,
+            167,
+            168,
+            169,
+            170,
+            171,
+            172,
+            173,
+            178,
+            179,
+            184,
+            185,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            214,
+            215,
+            220,
+            221
+          ];
+        }
+      } catch (error) {
+      }
+      exports.inspectOpts = Object.keys(process.env).filter((key) => {
+        return /^debug_/i.test(key);
+      }).reduce((obj, key) => {
+        const prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, (_, k) => {
+          return k.toUpperCase();
+        });
+        let val = process.env[key];
+        if (/^(yes|on|true|enabled)$/i.test(val)) {
+          val = true;
+        } else if (/^(no|off|false|disabled)$/i.test(val)) {
+          val = false;
+        } else if (val === "null") {
+          val = null;
+        } else {
+          val = Number(val);
+        }
+        obj[prop] = val;
+        return obj;
+      }, {});
+      function useColors() {
+        return "colors" in exports.inspectOpts ? Boolean(exports.inspectOpts.colors) : tty.isatty(process.stderr.fd);
+      }
+      function formatArgs(args) {
+        const { namespace: name, useColors: useColors2 } = this;
+        if (useColors2) {
+          const c = this.color;
+          const colorCode = "\x1B[3" + (c < 8 ? c : "8;5;" + c);
+          const prefix = `  ${colorCode};1m${name} \x1B[0m`;
+          args[0] = prefix + args[0].split("\n").join("\n" + prefix);
+          args.push(colorCode + "m+" + module.exports.humanize(this.diff) + "\x1B[0m");
+        } else {
+          args[0] = getDate() + name + " " + args[0];
+        }
+      }
+      function getDate() {
+        if (exports.inspectOpts.hideDate) {
+          return "";
+        }
+        return (/* @__PURE__ */ new Date()).toISOString() + " ";
+      }
+      function log(...args) {
+        return process.stderr.write(util3.formatWithOptions(exports.inspectOpts, ...args) + "\n");
+      }
+      function save(namespaces) {
+        if (namespaces) {
+          process.env.DEBUG = namespaces;
+        } else {
+          delete process.env.DEBUG;
+        }
+      }
+      function load() {
+        return process.env.DEBUG;
+      }
+      function init(debug12) {
+        debug12.inspectOpts = {};
+        const keys = Object.keys(exports.inspectOpts);
+        for (let i = 0; i < keys.length; i++) {
+          debug12.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
+        }
+      }
+      module.exports = require_common2()(exports);
+      var { formatters } = module.exports;
+      formatters.o = function(v) {
+        this.inspectOpts.colors = this.useColors;
+        return util3.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
+      };
+      formatters.O = function(v) {
+        this.inspectOpts.colors = this.useColors;
+        return util3.inspect(v, this.inspectOpts);
+      };
+    }
+  });
+
+  // node_modules/socket.io-client/node_modules/debug/src/index.js
+  var require_src2 = __commonJS({
+    "node_modules/socket.io-client/node_modules/debug/src/index.js"(exports, module) {
+      if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
+        module.exports = require_browser2();
+      } else {
+        module.exports = require_node2();
+      }
+    }
+  });
+
+  // node_modules/socket.io-parser/node_modules/debug/src/common.js
+  var require_common3 = __commonJS({
+    "node_modules/socket.io-parser/node_modules/debug/src/common.js"(exports, module) {
+      function setup(env) {
+        createDebug.debug = createDebug;
+        createDebug.default = createDebug;
+        createDebug.coerce = coerce;
+        createDebug.disable = disable;
+        createDebug.enable = enable;
+        createDebug.enabled = enabled;
+        createDebug.humanize = require_ms();
+        createDebug.destroy = destroy;
+        Object.keys(env).forEach((key) => {
+          createDebug[key] = env[key];
+        });
+        createDebug.names = [];
+        createDebug.skips = [];
+        createDebug.formatters = {};
+        function selectColor(namespace) {
+          let hash = 0;
+          for (let i = 0; i < namespace.length; i++) {
+            hash = (hash << 5) - hash + namespace.charCodeAt(i);
+            hash |= 0;
+          }
+          return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
+        }
+        createDebug.selectColor = selectColor;
+        function createDebug(namespace) {
+          let prevTime;
+          let enableOverride = null;
+          let namespacesCache;
+          let enabledCache;
+          function debug12(...args) {
+            if (!debug12.enabled) {
+              return;
+            }
+            const self2 = debug12;
+            const curr = Number(/* @__PURE__ */ new Date());
+            const ms = curr - (prevTime || curr);
+            self2.diff = ms;
+            self2.prev = prevTime;
+            self2.curr = curr;
+            prevTime = curr;
+            args[0] = createDebug.coerce(args[0]);
+            if (typeof args[0] !== "string") {
+              args.unshift("%O");
+            }
+            let index = 0;
+            args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
+              if (match === "%%") {
+                return "%";
+              }
+              index++;
+              const formatter = createDebug.formatters[format];
+              if (typeof formatter === "function") {
+                const val = args[index];
+                match = formatter.call(self2, val);
+                args.splice(index, 1);
+                index--;
+              }
+              return match;
+            });
+            createDebug.formatArgs.call(self2, args);
+            const logFn = self2.log || createDebug.log;
+            logFn.apply(self2, args);
+          }
+          debug12.namespace = namespace;
+          debug12.useColors = createDebug.useColors();
+          debug12.color = createDebug.selectColor(namespace);
+          debug12.extend = extend2;
+          debug12.destroy = createDebug.destroy;
+          Object.defineProperty(debug12, "enabled", {
+            enumerable: true,
+            configurable: false,
+            get: () => {
+              if (enableOverride !== null) {
+                return enableOverride;
+              }
+              if (namespacesCache !== createDebug.namespaces) {
+                namespacesCache = createDebug.namespaces;
+                enabledCache = createDebug.enabled(namespace);
+              }
+              return enabledCache;
+            },
+            set: (v) => {
+              enableOverride = v;
+            }
+          });
+          if (typeof createDebug.init === "function") {
+            createDebug.init(debug12);
+          }
+          return debug12;
+        }
+        function extend2(namespace, delimiter) {
+          const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
+          newDebug.log = this.log;
+          return newDebug;
+        }
+        function enable(namespaces) {
+          createDebug.save(namespaces);
+          createDebug.namespaces = namespaces;
+          createDebug.names = [];
+          createDebug.skips = [];
+          let i;
+          const split = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
+          const len = split.length;
+          for (i = 0; i < len; i++) {
+            if (!split[i]) {
+              continue;
+            }
+            namespaces = split[i].replace(/\*/g, ".*?");
+            if (namespaces[0] === "-") {
+              createDebug.skips.push(new RegExp("^" + namespaces.slice(1) + "$"));
+            } else {
+              createDebug.names.push(new RegExp("^" + namespaces + "$"));
+            }
+          }
+        }
+        function disable() {
+          const namespaces = [
+            ...createDebug.names.map(toNamespace),
+            ...createDebug.skips.map(toNamespace).map((namespace) => "-" + namespace)
+          ].join(",");
+          createDebug.enable("");
+          return namespaces;
+        }
+        function enabled(name) {
+          if (name[name.length - 1] === "*") {
+            return true;
+          }
+          let i;
+          let len;
+          for (i = 0, len = createDebug.skips.length; i < len; i++) {
+            if (createDebug.skips[i].test(name)) {
+              return false;
+            }
+          }
+          for (i = 0, len = createDebug.names.length; i < len; i++) {
+            if (createDebug.names[i].test(name)) {
+              return true;
+            }
+          }
+          return false;
+        }
+        function toNamespace(regexp) {
+          return regexp.toString().substring(2, regexp.toString().length - 2).replace(/\.\*\?$/, "*");
+        }
+        function coerce(val) {
+          if (val instanceof Error) {
+            return val.stack || val.message;
+          }
+          return val;
+        }
+        function destroy() {
+          console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+        }
+        createDebug.enable(createDebug.load());
+        return createDebug;
+      }
+      module.exports = setup;
+    }
+  });
+
+  // node_modules/socket.io-parser/node_modules/debug/src/browser.js
+  var require_browser3 = __commonJS({
+    "node_modules/socket.io-parser/node_modules/debug/src/browser.js"(exports, module) {
+      exports.formatArgs = formatArgs;
+      exports.save = save;
+      exports.load = load;
+      exports.useColors = useColors;
+      exports.storage = localstorage();
+      exports.destroy = /* @__PURE__ */ (() => {
+        let warned = false;
+        return () => {
+          if (!warned) {
+            warned = true;
+            console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+          }
+        };
+      })();
+      exports.colors = [
+        "#0000CC",
+        "#0000FF",
+        "#0033CC",
+        "#0033FF",
+        "#0066CC",
+        "#0066FF",
+        "#0099CC",
+        "#0099FF",
+        "#00CC00",
+        "#00CC33",
+        "#00CC66",
+        "#00CC99",
+        "#00CCCC",
+        "#00CCFF",
+        "#3300CC",
+        "#3300FF",
+        "#3333CC",
+        "#3333FF",
+        "#3366CC",
+        "#3366FF",
+        "#3399CC",
+        "#3399FF",
+        "#33CC00",
+        "#33CC33",
+        "#33CC66",
+        "#33CC99",
+        "#33CCCC",
+        "#33CCFF",
+        "#6600CC",
+        "#6600FF",
+        "#6633CC",
+        "#6633FF",
+        "#66CC00",
+        "#66CC33",
+        "#9900CC",
+        "#9900FF",
+        "#9933CC",
+        "#9933FF",
+        "#99CC00",
+        "#99CC33",
+        "#CC0000",
+        "#CC0033",
+        "#CC0066",
+        "#CC0099",
+        "#CC00CC",
+        "#CC00FF",
+        "#CC3300",
+        "#CC3333",
+        "#CC3366",
+        "#CC3399",
+        "#CC33CC",
+        "#CC33FF",
+        "#CC6600",
+        "#CC6633",
+        "#CC9900",
+        "#CC9933",
+        "#CCCC00",
+        "#CCCC33",
+        "#FF0000",
+        "#FF0033",
+        "#FF0066",
+        "#FF0099",
+        "#FF00CC",
+        "#FF00FF",
+        "#FF3300",
+        "#FF3333",
+        "#FF3366",
+        "#FF3399",
+        "#FF33CC",
+        "#FF33FF",
+        "#FF6600",
+        "#FF6633",
+        "#FF9900",
+        "#FF9933",
+        "#FFCC00",
+        "#FFCC33"
+      ];
+      function useColors() {
+        if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
+          return true;
+        }
+        if (typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+          return false;
+        }
+        let m;
+        return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
+        typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
+        // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+        typeof navigator !== "undefined" && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
+        typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
+      }
+      function formatArgs(args) {
+        args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module.exports.humanize(this.diff);
+        if (!this.useColors) {
+          return;
+        }
+        const c = "color: " + this.color;
+        args.splice(1, 0, c, "color: inherit");
+        let index = 0;
+        let lastC = 0;
+        args[0].replace(/%[a-zA-Z%]/g, (match) => {
+          if (match === "%%") {
+            return;
+          }
+          index++;
+          if (match === "%c") {
+            lastC = index;
+          }
+        });
+        args.splice(lastC, 0, c);
+      }
+      exports.log = console.debug || console.log || (() => {
+      });
+      function save(namespaces) {
+        try {
+          if (namespaces) {
+            exports.storage.setItem("debug", namespaces);
+          } else {
+            exports.storage.removeItem("debug");
+          }
+        } catch (error) {
+        }
+      }
+      function load() {
+        let r;
+        try {
+          r = exports.storage.getItem("debug");
+        } catch (error) {
+        }
+        if (!r && typeof process !== "undefined" && "env" in process) {
+          r = process.env.DEBUG;
+        }
+        return r;
+      }
+      function localstorage() {
+        try {
+          return localStorage;
+        } catch (error) {
+        }
+      }
+      module.exports = require_common3()(exports);
+      var { formatters } = module.exports;
+      formatters.j = function(v) {
+        try {
+          return JSON.stringify(v);
+        } catch (error) {
+          return "[UnexpectedJSONParseError]: " + error.message;
+        }
+      };
+    }
+  });
+
+  // node_modules/socket.io-parser/node_modules/debug/src/node.js
+  var require_node3 = __commonJS({
+    "node_modules/socket.io-parser/node_modules/debug/src/node.js"(exports, module) {
+      var tty = __require("tty");
+      var util3 = __require("util");
+      exports.init = init;
+      exports.log = log;
+      exports.formatArgs = formatArgs;
+      exports.save = save;
+      exports.load = load;
+      exports.useColors = useColors;
+      exports.destroy = util3.deprecate(
+        () => {
+        },
+        "Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`."
+      );
+      exports.colors = [6, 2, 3, 4, 5, 1];
+      try {
+        const supportsColor = require_supports_color();
+        if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
+          exports.colors = [
+            20,
+            21,
+            26,
+            27,
+            32,
+            33,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            56,
+            57,
+            62,
+            63,
+            68,
+            69,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            92,
+            93,
+            98,
+            99,
+            112,
+            113,
+            128,
+            129,
+            134,
+            135,
+            148,
+            149,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165,
+            166,
+            167,
+            168,
+            169,
+            170,
+            171,
+            172,
+            173,
+            178,
+            179,
+            184,
+            185,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            214,
+            215,
+            220,
+            221
+          ];
+        }
+      } catch (error) {
+      }
+      exports.inspectOpts = Object.keys(process.env).filter((key) => {
+        return /^debug_/i.test(key);
+      }).reduce((obj, key) => {
+        const prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, (_, k) => {
+          return k.toUpperCase();
+        });
+        let val = process.env[key];
+        if (/^(yes|on|true|enabled)$/i.test(val)) {
+          val = true;
+        } else if (/^(no|off|false|disabled)$/i.test(val)) {
+          val = false;
+        } else if (val === "null") {
+          val = null;
+        } else {
+          val = Number(val);
+        }
+        obj[prop] = val;
+        return obj;
+      }, {});
+      function useColors() {
+        return "colors" in exports.inspectOpts ? Boolean(exports.inspectOpts.colors) : tty.isatty(process.stderr.fd);
+      }
+      function formatArgs(args) {
+        const { namespace: name, useColors: useColors2 } = this;
+        if (useColors2) {
+          const c = this.color;
+          const colorCode = "\x1B[3" + (c < 8 ? c : "8;5;" + c);
+          const prefix = `  ${colorCode};1m${name} \x1B[0m`;
+          args[0] = prefix + args[0].split("\n").join("\n" + prefix);
+          args.push(colorCode + "m+" + module.exports.humanize(this.diff) + "\x1B[0m");
+        } else {
+          args[0] = getDate() + name + " " + args[0];
+        }
+      }
+      function getDate() {
+        if (exports.inspectOpts.hideDate) {
+          return "";
+        }
+        return (/* @__PURE__ */ new Date()).toISOString() + " ";
+      }
+      function log(...args) {
+        return process.stderr.write(util3.formatWithOptions(exports.inspectOpts, ...args) + "\n");
+      }
+      function save(namespaces) {
+        if (namespaces) {
+          process.env.DEBUG = namespaces;
+        } else {
+          delete process.env.DEBUG;
+        }
+      }
+      function load() {
+        return process.env.DEBUG;
+      }
+      function init(debug12) {
+        debug12.inspectOpts = {};
+        const keys = Object.keys(exports.inspectOpts);
+        for (let i = 0; i < keys.length; i++) {
+          debug12.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
+        }
+      }
+      module.exports = require_common3()(exports);
+      var { formatters } = module.exports;
+      formatters.o = function(v) {
+        this.inspectOpts.colors = this.useColors;
+        return util3.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
+      };
+      formatters.O = function(v) {
+        this.inspectOpts.colors = this.useColors;
+        return util3.inspect(v, this.inspectOpts);
+      };
+    }
+  });
+
+  // node_modules/socket.io-parser/node_modules/debug/src/index.js
+  var require_src3 = __commonJS({
+    "node_modules/socket.io-parser/node_modules/debug/src/index.js"(exports, module) {
+      if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
+        module.exports = require_browser3();
+      } else {
+        module.exports = require_node3();
+      }
+    }
+  });
+
   // node_modules/crypto-js/core.js
   var require_core = __commonJS({
     "node_modules/crypto-js/core.js"(exports, module) {
@@ -14528,39 +16410,39 @@
         }
       })(exports, function() {
         var CryptoJS2 = CryptoJS2 || function(Math2, undefined2) {
-          var crypto2;
+          var crypto3;
           if (typeof window !== "undefined" && window.crypto) {
-            crypto2 = window.crypto;
+            crypto3 = window.crypto;
           }
           if (typeof self !== "undefined" && self.crypto) {
-            crypto2 = self.crypto;
+            crypto3 = self.crypto;
           }
           if (typeof globalThis !== "undefined" && globalThis.crypto) {
-            crypto2 = globalThis.crypto;
+            crypto3 = globalThis.crypto;
           }
-          if (!crypto2 && typeof window !== "undefined" && window.msCrypto) {
-            crypto2 = window.msCrypto;
+          if (!crypto3 && typeof window !== "undefined" && window.msCrypto) {
+            crypto3 = window.msCrypto;
           }
-          if (!crypto2 && typeof global !== "undefined" && global.crypto) {
-            crypto2 = global.crypto;
+          if (!crypto3 && typeof global !== "undefined" && global.crypto) {
+            crypto3 = global.crypto;
           }
-          if (!crypto2 && typeof __require === "function") {
+          if (!crypto3 && typeof __require === "function") {
             try {
-              crypto2 = __require("crypto");
+              crypto3 = __require("crypto");
             } catch (err) {
             }
           }
           var cryptoSecureRandomInt = function() {
-            if (crypto2) {
-              if (typeof crypto2.getRandomValues === "function") {
+            if (crypto3) {
+              if (typeof crypto3.getRandomValues === "function") {
                 try {
-                  return crypto2.getRandomValues(new Uint32Array(1))[0];
+                  return crypto3.getRandomValues(new Uint32Array(1))[0];
                 } catch (err) {
                 }
               }
-              if (typeof crypto2.randomBytes === "function") {
+              if (typeof crypto3.randomBytes === "function") {
                 try {
-                  return crypto2.randomBytes(4).readInt32LE();
+                  return crypto3.randomBytes(4).readInt32LE();
                 } catch (err) {
                 }
               }
@@ -21082,7 +22964,7 @@
       var stringEndsWith = String.prototype.endsWith || function(s) {
         return s.length <= this.length && this.indexOf(s, this.length - s.length) !== -1;
       };
-      function getProxyForUrl2(url3) {
+      function getProxyForUrl(url3) {
         var parsedUrl = typeof url3 === "string" ? parseUrl(url3) : url3 || {};
         var proto = parsedUrl.protocol;
         var hostname = parsedUrl.host;
@@ -21132,7 +23014,539 @@
       function getEnv(key) {
         return process.env[key.toLowerCase()] || process.env[key.toUpperCase()] || "";
       }
-      exports.getProxyForUrl = getProxyForUrl2;
+      exports.getProxyForUrl = getProxyForUrl;
+    }
+  });
+
+  // node_modules/debug/src/common.js
+  var require_common4 = __commonJS({
+    "node_modules/debug/src/common.js"(exports, module) {
+      function setup(env) {
+        createDebug.debug = createDebug;
+        createDebug.default = createDebug;
+        createDebug.coerce = coerce;
+        createDebug.disable = disable;
+        createDebug.enable = enable;
+        createDebug.enabled = enabled;
+        createDebug.humanize = require_ms();
+        createDebug.destroy = destroy;
+        Object.keys(env).forEach((key) => {
+          createDebug[key] = env[key];
+        });
+        createDebug.names = [];
+        createDebug.skips = [];
+        createDebug.formatters = {};
+        function selectColor(namespace) {
+          let hash = 0;
+          for (let i = 0; i < namespace.length; i++) {
+            hash = (hash << 5) - hash + namespace.charCodeAt(i);
+            hash |= 0;
+          }
+          return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
+        }
+        createDebug.selectColor = selectColor;
+        function createDebug(namespace) {
+          let prevTime;
+          let enableOverride = null;
+          let namespacesCache;
+          let enabledCache;
+          function debug12(...args) {
+            if (!debug12.enabled) {
+              return;
+            }
+            const self2 = debug12;
+            const curr = Number(/* @__PURE__ */ new Date());
+            const ms = curr - (prevTime || curr);
+            self2.diff = ms;
+            self2.prev = prevTime;
+            self2.curr = curr;
+            prevTime = curr;
+            args[0] = createDebug.coerce(args[0]);
+            if (typeof args[0] !== "string") {
+              args.unshift("%O");
+            }
+            let index = 0;
+            args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
+              if (match === "%%") {
+                return "%";
+              }
+              index++;
+              const formatter = createDebug.formatters[format];
+              if (typeof formatter === "function") {
+                const val = args[index];
+                match = formatter.call(self2, val);
+                args.splice(index, 1);
+                index--;
+              }
+              return match;
+            });
+            createDebug.formatArgs.call(self2, args);
+            const logFn = self2.log || createDebug.log;
+            logFn.apply(self2, args);
+          }
+          debug12.namespace = namespace;
+          debug12.useColors = createDebug.useColors();
+          debug12.color = createDebug.selectColor(namespace);
+          debug12.extend = extend2;
+          debug12.destroy = createDebug.destroy;
+          Object.defineProperty(debug12, "enabled", {
+            enumerable: true,
+            configurable: false,
+            get: () => {
+              if (enableOverride !== null) {
+                return enableOverride;
+              }
+              if (namespacesCache !== createDebug.namespaces) {
+                namespacesCache = createDebug.namespaces;
+                enabledCache = createDebug.enabled(namespace);
+              }
+              return enabledCache;
+            },
+            set: (v) => {
+              enableOverride = v;
+            }
+          });
+          if (typeof createDebug.init === "function") {
+            createDebug.init(debug12);
+          }
+          return debug12;
+        }
+        function extend2(namespace, delimiter) {
+          const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
+          newDebug.log = this.log;
+          return newDebug;
+        }
+        function enable(namespaces) {
+          createDebug.save(namespaces);
+          createDebug.namespaces = namespaces;
+          createDebug.names = [];
+          createDebug.skips = [];
+          const split = (typeof namespaces === "string" ? namespaces : "").trim().replace(" ", ",").split(",").filter(Boolean);
+          for (const ns of split) {
+            if (ns[0] === "-") {
+              createDebug.skips.push(ns.slice(1));
+            } else {
+              createDebug.names.push(ns);
+            }
+          }
+        }
+        function matchesTemplate(search, template) {
+          let searchIndex = 0;
+          let templateIndex = 0;
+          let starIndex = -1;
+          let matchIndex = 0;
+          while (searchIndex < search.length) {
+            if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === "*")) {
+              if (template[templateIndex] === "*") {
+                starIndex = templateIndex;
+                matchIndex = searchIndex;
+                templateIndex++;
+              } else {
+                searchIndex++;
+                templateIndex++;
+              }
+            } else if (starIndex !== -1) {
+              templateIndex = starIndex + 1;
+              matchIndex++;
+              searchIndex = matchIndex;
+            } else {
+              return false;
+            }
+          }
+          while (templateIndex < template.length && template[templateIndex] === "*") {
+            templateIndex++;
+          }
+          return templateIndex === template.length;
+        }
+        function disable() {
+          const namespaces = [
+            ...createDebug.names,
+            ...createDebug.skips.map((namespace) => "-" + namespace)
+          ].join(",");
+          createDebug.enable("");
+          return namespaces;
+        }
+        function enabled(name) {
+          for (const skip of createDebug.skips) {
+            if (matchesTemplate(name, skip)) {
+              return false;
+            }
+          }
+          for (const ns of createDebug.names) {
+            if (matchesTemplate(name, ns)) {
+              return true;
+            }
+          }
+          return false;
+        }
+        function coerce(val) {
+          if (val instanceof Error) {
+            return val.stack || val.message;
+          }
+          return val;
+        }
+        function destroy() {
+          console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+        }
+        createDebug.enable(createDebug.load());
+        return createDebug;
+      }
+      module.exports = setup;
+    }
+  });
+
+  // node_modules/debug/src/browser.js
+  var require_browser4 = __commonJS({
+    "node_modules/debug/src/browser.js"(exports, module) {
+      exports.formatArgs = formatArgs;
+      exports.save = save;
+      exports.load = load;
+      exports.useColors = useColors;
+      exports.storage = localstorage();
+      exports.destroy = /* @__PURE__ */ (() => {
+        let warned = false;
+        return () => {
+          if (!warned) {
+            warned = true;
+            console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+          }
+        };
+      })();
+      exports.colors = [
+        "#0000CC",
+        "#0000FF",
+        "#0033CC",
+        "#0033FF",
+        "#0066CC",
+        "#0066FF",
+        "#0099CC",
+        "#0099FF",
+        "#00CC00",
+        "#00CC33",
+        "#00CC66",
+        "#00CC99",
+        "#00CCCC",
+        "#00CCFF",
+        "#3300CC",
+        "#3300FF",
+        "#3333CC",
+        "#3333FF",
+        "#3366CC",
+        "#3366FF",
+        "#3399CC",
+        "#3399FF",
+        "#33CC00",
+        "#33CC33",
+        "#33CC66",
+        "#33CC99",
+        "#33CCCC",
+        "#33CCFF",
+        "#6600CC",
+        "#6600FF",
+        "#6633CC",
+        "#6633FF",
+        "#66CC00",
+        "#66CC33",
+        "#9900CC",
+        "#9900FF",
+        "#9933CC",
+        "#9933FF",
+        "#99CC00",
+        "#99CC33",
+        "#CC0000",
+        "#CC0033",
+        "#CC0066",
+        "#CC0099",
+        "#CC00CC",
+        "#CC00FF",
+        "#CC3300",
+        "#CC3333",
+        "#CC3366",
+        "#CC3399",
+        "#CC33CC",
+        "#CC33FF",
+        "#CC6600",
+        "#CC6633",
+        "#CC9900",
+        "#CC9933",
+        "#CCCC00",
+        "#CCCC33",
+        "#FF0000",
+        "#FF0033",
+        "#FF0066",
+        "#FF0099",
+        "#FF00CC",
+        "#FF00FF",
+        "#FF3300",
+        "#FF3333",
+        "#FF3366",
+        "#FF3399",
+        "#FF33CC",
+        "#FF33FF",
+        "#FF6600",
+        "#FF6633",
+        "#FF9900",
+        "#FF9933",
+        "#FFCC00",
+        "#FFCC33"
+      ];
+      function useColors() {
+        if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
+          return true;
+        }
+        if (typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+          return false;
+        }
+        let m;
+        return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
+        typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
+        // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+        typeof navigator !== "undefined" && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
+        typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
+      }
+      function formatArgs(args) {
+        args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module.exports.humanize(this.diff);
+        if (!this.useColors) {
+          return;
+        }
+        const c = "color: " + this.color;
+        args.splice(1, 0, c, "color: inherit");
+        let index = 0;
+        let lastC = 0;
+        args[0].replace(/%[a-zA-Z%]/g, (match) => {
+          if (match === "%%") {
+            return;
+          }
+          index++;
+          if (match === "%c") {
+            lastC = index;
+          }
+        });
+        args.splice(lastC, 0, c);
+      }
+      exports.log = console.debug || console.log || (() => {
+      });
+      function save(namespaces) {
+        try {
+          if (namespaces) {
+            exports.storage.setItem("debug", namespaces);
+          } else {
+            exports.storage.removeItem("debug");
+          }
+        } catch (error) {
+        }
+      }
+      function load() {
+        let r;
+        try {
+          r = exports.storage.getItem("debug");
+        } catch (error) {
+        }
+        if (!r && typeof process !== "undefined" && "env" in process) {
+          r = process.env.DEBUG;
+        }
+        return r;
+      }
+      function localstorage() {
+        try {
+          return localStorage;
+        } catch (error) {
+        }
+      }
+      module.exports = require_common4()(exports);
+      var { formatters } = module.exports;
+      formatters.j = function(v) {
+        try {
+          return JSON.stringify(v);
+        } catch (error) {
+          return "[UnexpectedJSONParseError]: " + error.message;
+        }
+      };
+    }
+  });
+
+  // node_modules/debug/src/node.js
+  var require_node4 = __commonJS({
+    "node_modules/debug/src/node.js"(exports, module) {
+      var tty = __require("tty");
+      var util3 = __require("util");
+      exports.init = init;
+      exports.log = log;
+      exports.formatArgs = formatArgs;
+      exports.save = save;
+      exports.load = load;
+      exports.useColors = useColors;
+      exports.destroy = util3.deprecate(
+        () => {
+        },
+        "Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`."
+      );
+      exports.colors = [6, 2, 3, 4, 5, 1];
+      try {
+        const supportsColor = require_supports_color();
+        if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
+          exports.colors = [
+            20,
+            21,
+            26,
+            27,
+            32,
+            33,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            56,
+            57,
+            62,
+            63,
+            68,
+            69,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            92,
+            93,
+            98,
+            99,
+            112,
+            113,
+            128,
+            129,
+            134,
+            135,
+            148,
+            149,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165,
+            166,
+            167,
+            168,
+            169,
+            170,
+            171,
+            172,
+            173,
+            178,
+            179,
+            184,
+            185,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            214,
+            215,
+            220,
+            221
+          ];
+        }
+      } catch (error) {
+      }
+      exports.inspectOpts = Object.keys(process.env).filter((key) => {
+        return /^debug_/i.test(key);
+      }).reduce((obj, key) => {
+        const prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, (_, k) => {
+          return k.toUpperCase();
+        });
+        let val = process.env[key];
+        if (/^(yes|on|true|enabled)$/i.test(val)) {
+          val = true;
+        } else if (/^(no|off|false|disabled)$/i.test(val)) {
+          val = false;
+        } else if (val === "null") {
+          val = null;
+        } else {
+          val = Number(val);
+        }
+        obj[prop] = val;
+        return obj;
+      }, {});
+      function useColors() {
+        return "colors" in exports.inspectOpts ? Boolean(exports.inspectOpts.colors) : tty.isatty(process.stderr.fd);
+      }
+      function formatArgs(args) {
+        const { namespace: name, useColors: useColors2 } = this;
+        if (useColors2) {
+          const c = this.color;
+          const colorCode = "\x1B[3" + (c < 8 ? c : "8;5;" + c);
+          const prefix = `  ${colorCode};1m${name} \x1B[0m`;
+          args[0] = prefix + args[0].split("\n").join("\n" + prefix);
+          args.push(colorCode + "m+" + module.exports.humanize(this.diff) + "\x1B[0m");
+        } else {
+          args[0] = getDate() + name + " " + args[0];
+        }
+      }
+      function getDate() {
+        if (exports.inspectOpts.hideDate) {
+          return "";
+        }
+        return (/* @__PURE__ */ new Date()).toISOString() + " ";
+      }
+      function log(...args) {
+        return process.stderr.write(util3.formatWithOptions(exports.inspectOpts, ...args) + "\n");
+      }
+      function save(namespaces) {
+        if (namespaces) {
+          process.env.DEBUG = namespaces;
+        } else {
+          delete process.env.DEBUG;
+        }
+      }
+      function load() {
+        return process.env.DEBUG;
+      }
+      function init(debug12) {
+        debug12.inspectOpts = {};
+        const keys = Object.keys(exports.inspectOpts);
+        for (let i = 0; i < keys.length; i++) {
+          debug12.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
+        }
+      }
+      module.exports = require_common4()(exports);
+      var { formatters } = module.exports;
+      formatters.o = function(v) {
+        this.inspectOpts.colors = this.useColors;
+        return util3.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
+      };
+      formatters.O = function(v) {
+        this.inspectOpts.colors = this.useColors;
+        return util3.inspect(v, this.inspectOpts);
+      };
+    }
+  });
+
+  // node_modules/debug/src/index.js
+  var require_src4 = __commonJS({
+    "node_modules/debug/src/index.js"(exports, module) {
+      if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
+        module.exports = require_browser4();
+      } else {
+        module.exports = require_node4();
+      }
     }
   });
 
@@ -21143,7 +23557,7 @@
       module.exports = function() {
         if (!debug12) {
           try {
-            debug12 = require_src()("follow-redirects");
+            debug12 = require_src4()("follow-redirects");
           } catch (error) {
           }
           if (typeof debug12 !== "function") {
@@ -23823,7 +26237,7 @@
   var protocol2 = Socket.protocol;
 
   // node_modules/socket.io-client/build/esm-debug/url.js
-  var import_debug7 = __toESM(require_src(), 1);
+  var import_debug7 = __toESM(require_src2(), 1);
   var debug7 = (0, import_debug7.default)("socket.io-client:url");
   function url(uri, path = "", loc) {
     let obj = uri;
@@ -23973,7 +26387,7 @@
   }
 
   // node_modules/socket.io-parser/build/esm-debug/index.js
-  var import_debug8 = __toESM(require_src(), 1);
+  var import_debug8 = __toESM(require_src3(), 1);
   var debug8 = (0, import_debug8.default)("socket.io-parser");
   var RESERVED_EVENTS = [
     "connect",
@@ -24242,7 +26656,7 @@
   }
 
   // node_modules/socket.io-client/build/esm-debug/socket.js
-  var import_debug9 = __toESM(require_src(), 1);
+  var import_debug9 = __toESM(require_src2(), 1);
   var debug9 = (0, import_debug9.default)("socket.io-client:socket");
   var RESERVED_EVENTS2 = Object.freeze({
     connect: 1,
@@ -25068,7 +27482,7 @@
   };
 
   // node_modules/socket.io-client/build/esm-debug/manager.js
-  var import_debug10 = __toESM(require_src(), 1);
+  var import_debug10 = __toESM(require_src2(), 1);
   var debug10 = (0, import_debug10.default)("socket.io-client:manager");
   var Manager = class extends Emitter {
     constructor(uri, opts) {
@@ -25437,7 +27851,7 @@
   };
 
   // node_modules/socket.io-client/build/esm-debug/index.js
-  var import_debug11 = __toESM(require_src(), 1);
+  var import_debug11 = __toESM(require_src2(), 1);
   var debug11 = (0, import_debug11.default)("socket.io-client");
   var cache = {};
   function lookup(uri, opts) {
@@ -25595,6 +28009,7 @@
   // node_modules/axios/lib/utils.js
   var { toString: toString2 } = Object.prototype;
   var { getPrototypeOf } = Object;
+  var { iterator, toStringTag } = Symbol;
   var kindOf = /* @__PURE__ */ ((cache2) => (thing) => {
     const str = toString2.call(thing);
     return cache2[str] || (cache2[str] = str.slice(8, -1).toLowerCase());
@@ -25629,7 +28044,7 @@
       return false;
     }
     const prototype3 = getPrototypeOf(val);
-    return (prototype3 === null || prototype3 === Object.prototype || Object.getPrototypeOf(prototype3) === null) && !(Symbol.toStringTag in val) && !(Symbol.iterator in val);
+    return (prototype3 === null || prototype3 === Object.prototype || Object.getPrototypeOf(prototype3) === null) && !(toStringTag in val) && !(iterator in val);
   };
   var isDate = kindOfTest("Date");
   var isFile = kindOfTest("File");
@@ -25776,10 +28191,10 @@
     };
   })(typeof Uint8Array !== "undefined" && getPrototypeOf(Uint8Array));
   var forEachEntry = (obj, fn) => {
-    const generator = obj && obj[Symbol.iterator];
-    const iterator = generator.call(obj);
+    const generator = obj && obj[iterator];
+    const _iterator = generator.call(obj);
     let result;
-    while ((result = iterator.next()) && !result.done) {
+    while ((result = _iterator.next()) && !result.done) {
       const pair = result.value;
       fn.call(obj, pair[0], pair[1]);
     }
@@ -25848,23 +28263,8 @@
   var toFiniteNumber = (value2, defaultValue) => {
     return value2 != null && Number.isFinite(value2 = +value2) ? value2 : defaultValue;
   };
-  var ALPHA = "abcdefghijklmnopqrstuvwxyz";
-  var DIGIT = "0123456789";
-  var ALPHABET = {
-    DIGIT,
-    ALPHA,
-    ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
-  };
-  var generateString = (size = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
-    let str = "";
-    const { length } = alphabet;
-    while (size--) {
-      str += alphabet[Math.random() * length | 0];
-    }
-    return str;
-  };
   function isSpecCompliantForm(thing) {
-    return !!(thing && isFunction(thing.append) && thing[Symbol.toStringTag] === "FormData" && thing[Symbol.iterator]);
+    return !!(thing && isFunction(thing.append) && thing[toStringTag] === "FormData" && thing[iterator]);
   }
   var toJSONObject = (obj) => {
     const stack = new Array(10);
@@ -25910,6 +28310,7 @@
     isFunction(_global.postMessage)
   );
   var asap = typeof queueMicrotask !== "undefined" ? queueMicrotask.bind(_global) : typeof process !== "undefined" && process.nextTick || _setImmediate;
+  var isIterable = (thing) => thing != null && isFunction(thing[iterator]);
   var utils_default = {
     isArray,
     isArrayBuffer,
@@ -25961,14 +28362,13 @@
     findKey,
     global: _global,
     isContextDefined,
-    ALPHABET,
-    generateString,
     isSpecCompliantForm,
     toJSONObject,
     isAsyncFn,
     isThenable,
     setImmediate: _setImmediate,
-    asap
+    asap,
+    isIterable
   };
 
   // node_modules/axios/lib/core/AxiosError.js
@@ -26204,6 +28604,11 @@
       return url3;
     }
     const _encode = options && options.encode || encode3;
+    if (utils_default.isFunction(options)) {
+      options = {
+        serialize: options
+      };
+    }
     const serializeFn = options && options.serialize;
     let serializedParams;
     if (serializeFn) {
@@ -26292,11 +28697,31 @@
     clarifyTimeoutError: false
   };
 
+  // node_modules/axios/lib/platform/node/index.js
+  var import_crypto = __toESM(__require("crypto"), 1);
+
   // node_modules/axios/lib/platform/node/classes/URLSearchParams.js
   var import_url2 = __toESM(__require("url"), 1);
   var URLSearchParams_default = import_url2.default.URLSearchParams;
 
   // node_modules/axios/lib/platform/node/index.js
+  var ALPHA = "abcdefghijklmnopqrstuvwxyz";
+  var DIGIT = "0123456789";
+  var ALPHABET = {
+    DIGIT,
+    ALPHA,
+    ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
+  };
+  var generateString = (size = 16, alphabet = ALPHABET.ALPHA_DIGIT) => {
+    let str = "";
+    const { length } = alphabet;
+    const randomValues = new Uint32Array(size);
+    import_crypto.default.randomFillSync(randomValues);
+    for (let i = 0; i < size; i++) {
+      str += alphabet[randomValues[i] % length];
+    }
+    return str;
+  };
   var node_default = {
     isNode: true,
     classes: {
@@ -26304,6 +28729,8 @@
       FormData: FormData_default,
       Blob: typeof Blob !== "undefined" && Blob || null
     },
+    ALPHABET,
+    generateString,
     protocols: ["http", "https", "file", "data"]
   };
 
@@ -26621,10 +29048,15 @@
         setHeaders(header, valueOrRewrite);
       } else if (utils_default.isString(header) && (header = header.trim()) && !isValidHeaderName(header)) {
         setHeaders(parseHeaders_default(header), valueOrRewrite);
-      } else if (utils_default.isHeaders(header)) {
-        for (const [key, value2] of header.entries()) {
-          setHeader(value2, key, rewrite);
+      } else if (utils_default.isObject(header) && utils_default.isIterable(header)) {
+        let obj = {}, dest, key;
+        for (const entry of header) {
+          if (!utils_default.isArray(entry)) {
+            throw TypeError("Object iterator must return a key-value pair");
+          }
+          obj[key = entry[0]] = (dest = obj[key]) ? utils_default.isArray(dest) ? [...dest, entry[1]] : [dest, entry[1]] : entry[1];
         }
+        setHeaders(obj, valueOrRewrite);
       } else {
         header != null && setHeader(valueOrRewrite, header, rewrite);
       }
@@ -26728,6 +29160,9 @@
     toString() {
       return Object.entries(this.toJSON()).map(([header, value2]) => header + ": " + value2).join("\n");
     }
+    getSetCookie() {
+      return this.get("set-cookie") || [];
+    }
     get [Symbol.toStringTag]() {
       return "AxiosHeaders";
     }
@@ -26824,8 +29259,9 @@
   }
 
   // node_modules/axios/lib/core/buildFullPath.js
-  function buildFullPath(baseURL, requestedURL) {
-    if (baseURL && !isAbsoluteURL(requestedURL)) {
+  function buildFullPath(baseURL, requestedURL, allowAbsoluteUrls) {
+    let isRelativeUrl = !isAbsoluteURL(requestedURL);
+    if (baseURL && (isRelativeUrl || allowAbsoluteUrls == false)) {
       return combineURLs(baseURL, requestedURL);
     }
     return requestedURL;
@@ -26840,7 +29276,7 @@
   var import_zlib = __toESM(__require("zlib"), 1);
 
   // node_modules/axios/lib/env/data.js
-  var VERSION = "1.7.7";
+  var VERSION = "1.9.0";
 
   // node_modules/axios/lib/helpers/parseProtocol.js
   function parseProtocol(url3) {
@@ -26999,7 +29435,7 @@
   var import_events = __require("events");
 
   // node_modules/axios/lib/helpers/formDataToStream.js
-  var import_util7 = __require("util");
+  var import_util7 = __toESM(__require("util"), 1);
   var import_stream3 = __require("stream");
 
   // node_modules/axios/lib/helpers/readBlob.js
@@ -27020,8 +29456,8 @@
   var readBlob_default = readBlob;
 
   // node_modules/axios/lib/helpers/formDataToStream.js
-  var BOUNDARY_ALPHABET = utils_default.ALPHABET.ALPHA_DIGIT + "-_";
-  var textEncoder = new import_util7.TextEncoder();
+  var BOUNDARY_ALPHABET = platform_default.ALPHABET.ALPHA_DIGIT + "-_";
+  var textEncoder = typeof TextEncoder === "function" ? new TextEncoder() : new import_util7.default.TextEncoder();
   var CRLF = "\r\n";
   var CRLF_BYTES = textEncoder.encode(CRLF);
   var CRLF_BYTES_COUNT = 2;
@@ -27065,7 +29501,7 @@
     const {
       tag = "form-data-boundary",
       size = 25,
-      boundary = tag + "-" + utils_default.generateString(size, BOUNDARY_ALPHABET)
+      boundary = tag + "-" + platform_default.generateString(size, BOUNDARY_ALPHABET)
     } = options || {};
     if (!utils_default.isFormData(form)) {
       throw TypeError("FormData instance required");
@@ -27074,7 +29510,7 @@
       throw Error("boundary must be 10-70 characters long");
     }
     const boundaryBytes = textEncoder.encode("--" + boundary + CRLF);
-    const footerBytes = textEncoder.encode("--" + boundary + "--" + CRLF + CRLF);
+    const footerBytes = textEncoder.encode("--" + boundary + "--" + CRLF);
     let contentLength = footerBytes.byteLength;
     const parts2 = Array.from(form.entries()).map(([name, value2]) => {
       const part = new FormDataPart(name, value2);
@@ -27275,7 +29711,7 @@
   function setProxy(options, configProxy, location2) {
     let proxy = configProxy;
     if (!proxy && proxy !== false) {
-      const proxyUrl = (0, import_proxy_from_env.getProxyForUrl)(location2);
+      const proxyUrl = import_proxy_from_env.default.getProxyForUrl(location2);
       if (proxyUrl) {
         proxy = new URL(proxyUrl);
       }
@@ -27384,7 +29820,7 @@
             config2.signal.aborted ? abort() : config2.signal.addEventListener("abort", abort);
           }
         }
-        const fullPath = buildFullPath(config2.baseURL, config2.url);
+        const fullPath = buildFullPath(config2.baseURL, config2.url, config2.allowAbsoluteUrls);
         const parsed = new URL(fullPath, platform_default.hasBrowserEnv ? platform_default.origin : void 0);
         const protocol4 = parsed.protocol || supportedProtocols[0];
         if (protocol4 === "data:") {
@@ -27450,7 +29886,7 @@
             } catch (e) {
             }
           }
-        } else if (utils_default.isBlob(data)) {
+        } else if (utils_default.isBlob(data) || utils_default.isFile(data)) {
           data.size && headers.setContentType(data.type || "application/octet-stream");
           headers.setContentLength(data.size || 0);
           data = import_stream5.default.Readable.from(readBlob_default(data));
@@ -27653,7 +30089,7 @@
                 return;
               }
               const err = new AxiosError_default(
-                "maxContentLength size of " + config2.maxContentLength + " exceeded",
+                "stream has been aborted",
                 AxiosError_default.ERR_BAD_RESPONSE,
                 config2,
                 lastRequest
@@ -27749,45 +30185,13 @@
   };
 
   // node_modules/axios/lib/helpers/isURLSameOrigin.js
-  var isURLSameOrigin_default = platform_default.hasStandardBrowserEnv ? (
-    // Standard browser envs have full support of the APIs needed to test
-    // whether the request URL is of the same origin as current location.
-    function standardBrowserEnv() {
-      const msie = platform_default.navigator && /(msie|trident)/i.test(platform_default.navigator.userAgent);
-      const urlParsingNode = document.createElement("a");
-      let originURL;
-      function resolveURL(url3) {
-        let href = url3;
-        if (msie) {
-          urlParsingNode.setAttribute("href", href);
-          href = urlParsingNode.href;
-        }
-        urlParsingNode.setAttribute("href", href);
-        return {
-          href: urlParsingNode.href,
-          protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, "") : "",
-          host: urlParsingNode.host,
-          search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, "") : "",
-          hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, "") : "",
-          hostname: urlParsingNode.hostname,
-          port: urlParsingNode.port,
-          pathname: urlParsingNode.pathname.charAt(0) === "/" ? urlParsingNode.pathname : "/" + urlParsingNode.pathname
-        };
-      }
-      originURL = resolveURL(window.location.href);
-      return function isURLSameOrigin(requestURL) {
-        const parsed = utils_default.isString(requestURL) ? resolveURL(requestURL) : requestURL;
-        return parsed.protocol === originURL.protocol && parsed.host === originURL.host;
-      };
-    }()
-  ) : (
-    // Non standard browser envs (web workers, react-native) lack needed support.
-    /* @__PURE__ */ function nonStandardBrowserEnv() {
-      return function isURLSameOrigin() {
-        return true;
-      };
-    }()
-  );
+  var isURLSameOrigin_default = platform_default.hasStandardBrowserEnv ? /* @__PURE__ */ ((origin2, isMSIE) => (url3) => {
+    url3 = new URL(url3, platform_default.origin);
+    return origin2.protocol === url3.protocol && origin2.host === url3.host && (isMSIE || origin2.port === url3.port);
+  })(
+    new URL(platform_default.origin),
+    platform_default.navigator && /(msie|trident)/i.test(platform_default.navigator.userAgent)
+  ) : () => true;
 
   // node_modules/axios/lib/helpers/cookies.js
   var cookies_default = platform_default.hasStandardBrowserEnv ? (
@@ -27827,7 +30231,7 @@
   function mergeConfig(config1, config2) {
     config2 = config2 || {};
     const config3 = {};
-    function getMergedValue(target, source, caseless) {
+    function getMergedValue(target, source, prop, caseless) {
       if (utils_default.isPlainObject(target) && utils_default.isPlainObject(source)) {
         return utils_default.merge.call({ caseless }, target, source);
       } else if (utils_default.isPlainObject(source)) {
@@ -27837,11 +30241,11 @@
       }
       return source;
     }
-    function mergeDeepProperties(a, b, caseless) {
+    function mergeDeepProperties(a, b, prop, caseless) {
       if (!utils_default.isUndefined(b)) {
-        return getMergedValue(a, b, caseless);
+        return getMergedValue(a, b, prop, caseless);
       } else if (!utils_default.isUndefined(a)) {
-        return getMergedValue(void 0, a, caseless);
+        return getMergedValue(void 0, a, prop, caseless);
       }
     }
     function valueFromConfig2(a, b) {
@@ -27892,7 +30296,7 @@
       socketPath: defaultToConfig2,
       responseEncoding: defaultToConfig2,
       validateStatus: mergeDirectKeys,
-      headers: (a, b) => mergeDeepProperties(headersToObject(a), headersToObject(b), true)
+      headers: (a, b, prop) => mergeDeepProperties(headersToObject(a), headersToObject(b), prop, true)
     };
     utils_default.forEach(Object.keys(Object.assign({}, config1, config2)), function computeConfigValue(prop) {
       const merge2 = mergeMap[prop] || mergeDeepProperties;
@@ -27907,7 +30311,7 @@
     const newConfig = mergeConfig({}, config2);
     let { data, withXSRFToken, xsrfHeaderName, xsrfCookieName, headers, auth } = newConfig;
     newConfig.headers = headers = AxiosHeaders_default.from(headers);
-    newConfig.url = buildURL(buildFullPath(newConfig.baseURL, newConfig.url), config2.params, config2.paramsSerializer);
+    newConfig.url = buildURL(buildFullPath(newConfig.baseURL, newConfig.url, newConfig.allowAbsoluteUrls), config2.params, config2.paramsSerializer);
     if (auth) {
       headers.set(
         "Authorization",
@@ -28153,7 +30557,7 @@
     });
   };
   var trackStream = (stream4, chunkSize, onProgress, onFinish) => {
-    const iterator = readBytes(stream4, chunkSize);
+    const iterator2 = readBytes(stream4, chunkSize);
     let bytes = 0;
     let done;
     let _onFinish = (e) => {
@@ -28166,7 +30570,7 @@
       pull(controller) {
         return __async(this, null, function* () {
           try {
-            const { done: done2, value: value2 } = yield iterator.next();
+            const { done: done2, value: value2 } = yield iterator2.next();
             if (done2) {
               _onFinish();
               controller.close();
@@ -28186,7 +30590,7 @@
       },
       cancel(reason) {
         _onFinish(reason);
-        return iterator.return();
+        return iterator2.return();
       }
     }, {
       highWaterMark: 2
@@ -28196,7 +30600,7 @@
   // node_modules/axios/lib/adapters/fetch.js
   var isFetchSupported = typeof fetch === "function" && typeof Request === "function" && typeof Response === "function";
   var isReadableStreamSupported = isFetchSupported && typeof ReadableStream === "function";
-  var encodeText = isFetchSupported && (typeof TextEncoder === "function" ? /* @__PURE__ */ ((encoder) => (str) => encoder.encode(str))(new TextEncoder()) : (str) => __async(void 0, null, function* () {
+  var encodeText = isFetchSupported && (typeof TextEncoder === "function" ? /* @__PURE__ */ ((encoder) => (str) => encoder.encode(str))(new TextEncoder()) : (str) => __async(null, null, function* () {
     return new Uint8Array(yield new Response(str).arrayBuffer());
   }));
   var test = (fn, ...args) => {
@@ -28230,7 +30634,7 @@
       });
     });
   })(new Response());
-  var getBodyLength = (body) => __async(void 0, null, function* () {
+  var getBodyLength = (body) => __async(null, null, function* () {
     if (body == null) {
       return 0;
     }
@@ -28254,11 +30658,11 @@
       return (yield encodeText(body)).byteLength;
     }
   });
-  var resolveBodyLength = (headers, body) => __async(void 0, null, function* () {
+  var resolveBodyLength = (headers, body) => __async(null, null, function* () {
     const length = utils_default.toFiniteNumber(headers.getContentLength());
     return length == null ? getBodyLength(body) : length;
   });
-  var fetch_default = isFetchSupported && ((config2) => __async(void 0, null, function* () {
+  var fetch_default = isFetchSupported && ((config2) => __async(null, null, function* () {
     let {
       url: url3,
       method,
@@ -28346,7 +30750,7 @@
       });
     } catch (err) {
       unsubscribe && unsubscribe();
-      if (err && err.name === "TypeError" && /fetch/i.test(err.message)) {
+      if (err && err.name === "TypeError" && /Load failed|fetch/i.test(err.message)) {
         throw Object.assign(
           new AxiosError_default("Network Error", AxiosError_default.ERR_NETWORK, config2, request2),
           {
@@ -28488,6 +30892,12 @@
       return validator ? validator(value2, opt, opts) : true;
     };
   };
+  validators.spelling = function spelling(correctSpelling) {
+    return (value2, opt) => {
+      console.warn(`${opt} is likely a misspelling of ${correctSpelling}`);
+      return true;
+    };
+  };
   function assertOptions(options, schema, allowUnknown) {
     if (typeof options !== "object") {
       throw new AxiosError_default("options must be an object", AxiosError_default.ERR_BAD_OPTION_VALUE);
@@ -28519,7 +30929,7 @@
   var validators2 = validator_default.validators;
   var Axios = class {
     constructor(instanceConfig) {
-      this.defaults = instanceConfig;
+      this.defaults = instanceConfig || {};
       this.interceptors = {
         request: new InterceptorManager_default(),
         response: new InterceptorManager_default()
@@ -28539,8 +30949,8 @@
           return yield this._request(configOrUrl, config2);
         } catch (err) {
           if (err instanceof Error) {
-            let dummy;
-            Error.captureStackTrace ? Error.captureStackTrace(dummy = {}) : dummy = new Error();
+            let dummy = {};
+            Error.captureStackTrace ? Error.captureStackTrace(dummy) : dummy = new Error();
             const stack = dummy.stack ? dummy.stack.replace(/^.+\n/, "") : "";
             try {
               if (!err.stack) {
@@ -28583,6 +30993,16 @@
           }, true);
         }
       }
+      if (config2.allowAbsoluteUrls !== void 0) {
+      } else if (this.defaults.allowAbsoluteUrls !== void 0) {
+        config2.allowAbsoluteUrls = this.defaults.allowAbsoluteUrls;
+      } else {
+        config2.allowAbsoluteUrls = true;
+      }
+      validator_default.assertOptions(config2, {
+        baseUrl: validators2.spelling("baseURL"),
+        withXsrfToken: validators2.spelling("withXSRFToken")
+      }, true);
       config2.method = (config2.method || this.defaults.method || "get").toLowerCase();
       let contextHeaders = headers && utils_default.merge(
         headers.common,
@@ -28649,7 +31069,7 @@
     }
     getUri(config2) {
       config2 = mergeConfig(this.defaults, config2);
-      const fullPath = buildFullPath(config2.baseURL, config2.url);
+      const fullPath = buildFullPath(config2.baseURL, config2.url, config2.allowAbsoluteUrls);
       return buildURL(fullPath, config2.params, config2.paramsSerializer);
     }
   };
@@ -29126,15 +31546,49 @@
   var localUid = localStg.get("messengerDeviceUid");
   var uid = localUid ? localUid : v1_default();
   localStg.set("messengerDeviceUid", uid);
-  var appVersion = "0.0.0";
+  var appVersion = "1.5.6";
+  var getDeviceModel = () => {
+    if (ENV.isBrowser && typeof navigator !== "undefined") {
+      return `${navigator.userAgent} | ${navigator.platform}`;
+    } else if (ENV.isNode && typeof process !== "undefined") {
+      return `${process.platform} | ${process.arch} | Nodejs: ${process.version}`;
+    }
+    return "Unknown";
+  };
   var requiredHeaders = {
     "x-device-type": "web" /* WEB */,
-    "x-device-model": ENV.isBrowser ? `${navigator.userAgent} | ${navigator.platform}` : ENV.isNode ? `${process.platform} | ${process.arch} | Nodejs: ${process.version}` : "Unknown",
-    // dynamically fetching device model info
+    "x-device-model": getDeviceModel(),
     // 'x-app-lang': (languageGetter() || 'Uz-Latin') as I18nType.LangType, // dynamically fetching language info
     "x-app-version": appVersion,
     "x-app-uid": uid
   };
+  function queryStringify(obj, parentKey) {
+    if (!obj) {
+      return "";
+    }
+    return Object.keys(obj).map((key) => {
+      console.log(key, obj[key]);
+      if (Array.isArray(obj[key])) {
+        if (parentKey) {
+          return obj[key].map((item) => `${parentKey}[${key}]=${encodeURIComponent(item)}`).join("&");
+        }
+        return obj[key].map((item) => `${key}=${encodeURIComponent(item)}`).join("&");
+      }
+      if (typeof obj[key] === "object") {
+        if (parentKey) {
+          return queryStringify(obj[key], `${parentKey}[${key}]`);
+        }
+        return queryStringify(obj[key], key);
+      }
+      if (obj[key] === null || obj[key] === void 0) {
+        return null;
+      }
+      if (parentKey) {
+        return `${parentKey}[${key}]=${encodeURIComponent(obj[key])}`;
+      }
+      return `${key}=${encodeURIComponent(obj[key])}`;
+    }).filter(Boolean).join("&");
+  }
   var _pollingInterval, _polling, _socket, _axiosInstance, _events, _updatesHash, _baseURL, _token, _tokenGetter2;
   var Messenger = class {
     constructor({
@@ -29238,7 +31692,6 @@
         if (me.success) {
           this.user = me.data;
         }
-        console.log(__privateGet(this, _socket).baseUrl);
         if (__privateGet(this, _socket) !== null) {
           this.socket = lookup(__privateGet(this, _socket).baseUrl, {
             path: __privateGet(this, _socket).path,
@@ -29406,13 +31859,13 @@
       });
     }
     getChatMessages(_0) {
-      return __async(this, arguments, function* (chatId, { limit = 20, page = 1, search = "" } = {
+      return __async(this, arguments, function* (chatId, query = {
         limit: 20,
         page: 1,
         search: ""
       }) {
         const { data } = yield __privateGet(this, _axiosInstance).get(
-          `/v1/chats/${chatId}/messages?search=${search}&limit=${limit}&page=${page}`
+          `/v1/chats/${chatId}/messages?${queryStringify(query)}`
         );
         return data;
       });
@@ -29466,15 +31919,8 @@
       });
     }
     getChats() {
-      return __async(this, arguments, function* ({
-        limit = 100,
-        page = 1,
-        search,
-        type = null
-      } = { limit: 20, page: 1, type: null }) {
-        const { data } = yield __privateGet(this, _axiosInstance).get(
-          `/v1/chats?search=${search}&limit=${limit}&page=${page}${type ? `&type=${type}` : ""}`
-        );
+      return __async(this, arguments, function* (query = { limit: 20, page: 1, type: null }) {
+        const { data } = yield __privateGet(this, _axiosInstance).get(`/v1/chats?${queryStringify(query)}`);
         return data;
       });
     }

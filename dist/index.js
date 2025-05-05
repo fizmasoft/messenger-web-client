@@ -79,7 +79,7 @@ var require_package = __commonJS({
   "node_modules/dotenv/package.json"(exports2, module2) {
     module2.exports = {
       name: "dotenv",
-      version: "16.4.5",
+      version: "16.5.0",
       description: "Loads environment variables from .env file",
       main: "lib/main.js",
       types: "lib/main.d.ts",
@@ -100,10 +100,9 @@ var require_package = __commonJS({
       scripts: {
         "dts-check": "tsc --project tests/types/tsconfig.json",
         lint: "standard",
-        "lint-readme": "standard-markdown",
         pretest: "npm run lint && npm run dts-check",
-        test: "tap tests/*.js --100 -Rspec",
-        "test:coverage": "tap --coverage-report=lcov",
+        test: "tap run --allow-empty-coverage --disable-coverage --timeout=60000",
+        "test:coverage": "tap run --show-full-coverage --timeout=60000 --coverage-report=lcov",
         prerelease: "npm test",
         release: "standard-version"
       },
@@ -111,6 +110,7 @@ var require_package = __commonJS({
         type: "git",
         url: "git://github.com/motdotla/dotenv.git"
       },
+      homepage: "https://github.com/motdotla/dotenv#readme",
       funding: "https://dotenvx.com",
       keywords: [
         "dotenv",
@@ -124,15 +124,12 @@ var require_package = __commonJS({
       readmeFilename: "README.md",
       license: "BSD-2-Clause",
       devDependencies: {
-        "@definitelytyped/dtslint": "^0.0.133",
         "@types/node": "^18.11.3",
-        decache: "^4.6.1",
+        decache: "^4.6.2",
         sinon: "^14.0.1",
         standard: "^17.0.0",
-        "standard-markdown": "^7.1.0",
         "standard-version": "^9.5.0",
-        tap: "^16.3.0",
-        tar: "^6.1.11",
+        tap: "^19.2.0",
         typescript: "^4.8.4"
       },
       engines: {
@@ -198,9 +195,6 @@ var require_main = __commonJS({
         }
       }
       return DotenvModule.parse(decrypted);
-    }
-    function _log(message) {
-      console.log(`[dotenv@${version}][INFO] ${message}`);
     }
     function _warn(message) {
       console.log(`[dotenv@${version}][WARN] ${message}`);
@@ -274,7 +268,10 @@ var require_main = __commonJS({
       return envPath[0] === "~" ? path.join(os.homedir(), envPath.slice(1)) : envPath;
     }
     function _configVault(options) {
-      _log("Loading env from encrypted .env.vault");
+      const debug = Boolean(options && options.debug);
+      if (debug) {
+        _debug("Loading env from encrypted .env.vault");
+      }
       const parsed = DotenvModule._parseVault(options);
       let processEnv = process.env;
       if (options && options.processEnv != null) {
@@ -413,8 +410,8 @@ var require_main = __commonJS({
 });
 
 // src/index.ts
-var src_exports = {};
-__export(src_exports, {
+var index_exports = {};
+__export(index_exports, {
   CustomAxiosInstance: () => CustomAxiosInstance,
   ENV: () => ENV,
   RESPONSE_CODES: () => RESPONSE_CODES,
@@ -433,7 +430,7 @@ __export(src_exports, {
   request: () => request,
   sessionStg: () => sessionStg
 });
-module.exports = __toCommonJS(src_exports);
+module.exports = __toCommonJS(index_exports);
 
 // src/common/config/index.ts
 var import_dotenv = __toESM(require_main());
@@ -981,15 +978,49 @@ var sessionStg = createSessionStorage();
 var localUid = localStg.get("messengerDeviceUid");
 var uid = localUid ? localUid : (0, import_uuid.v1)();
 localStg.set("messengerDeviceUid", uid);
-var appVersion = "0.0.0";
+var appVersion = "1.5.6";
+var getDeviceModel = () => {
+  if (ENV.isBrowser && typeof navigator !== "undefined") {
+    return `${navigator.userAgent} | ${navigator.platform}`;
+  } else if (ENV.isNode && typeof process !== "undefined") {
+    return `${process.platform} | ${process.arch} | Nodejs: ${process.version}`;
+  }
+  return "Unknown";
+};
 var requiredHeaders = {
   "x-device-type": "web" /* WEB */,
-  "x-device-model": ENV.isBrowser ? `${navigator.userAgent} | ${navigator.platform}` : ENV.isNode ? `${process.platform} | ${process.arch} | Nodejs: ${process.version}` : "Unknown",
-  // dynamically fetching device model info
+  "x-device-model": getDeviceModel(),
   // 'x-app-lang': (languageGetter() || 'Uz-Latin') as I18nType.LangType, // dynamically fetching language info
   "x-app-version": appVersion,
   "x-app-uid": uid
 };
+function queryStringify(obj, parentKey) {
+  if (!obj) {
+    return "";
+  }
+  return Object.keys(obj).map((key) => {
+    console.log(key, obj[key]);
+    if (Array.isArray(obj[key])) {
+      if (parentKey) {
+        return obj[key].map((item) => `${parentKey}[${key}]=${encodeURIComponent(item)}`).join("&");
+      }
+      return obj[key].map((item) => `${key}=${encodeURIComponent(item)}`).join("&");
+    }
+    if (typeof obj[key] === "object") {
+      if (parentKey) {
+        return queryStringify(obj[key], `${parentKey}[${key}]`);
+      }
+      return queryStringify(obj[key], key);
+    }
+    if (obj[key] === null || obj[key] === void 0) {
+      return null;
+    }
+    if (parentKey) {
+      return `${parentKey}[${key}]=${encodeURIComponent(obj[key])}`;
+    }
+    return `${key}=${encodeURIComponent(obj[key])}`;
+  }).filter(Boolean).join("&");
+}
 var _pollingInterval, _polling, _socket, _axiosInstance, _events, _updatesHash, _baseURL, _token, _tokenGetter2;
 var Messenger = class {
   constructor({
@@ -1093,7 +1124,6 @@ var Messenger = class {
       if (me.success) {
         this.user = me.data;
       }
-      console.log(__privateGet(this, _socket).baseUrl);
       if (__privateGet(this, _socket) !== null) {
         this.socket = (0, import_socket.io)(__privateGet(this, _socket).baseUrl, {
           path: __privateGet(this, _socket).path,
@@ -1261,13 +1291,13 @@ var Messenger = class {
     });
   }
   getChatMessages(_0) {
-    return __async(this, arguments, function* (chatId, { limit = 20, page = 1, search = "" } = {
+    return __async(this, arguments, function* (chatId, query = {
       limit: 20,
       page: 1,
       search: ""
     }) {
       const { data } = yield __privateGet(this, _axiosInstance).get(
-        `/v1/chats/${chatId}/messages?search=${search}&limit=${limit}&page=${page}`
+        `/v1/chats/${chatId}/messages?${queryStringify(query)}`
       );
       return data;
     });
@@ -1321,15 +1351,8 @@ var Messenger = class {
     });
   }
   getChats() {
-    return __async(this, arguments, function* ({
-      limit = 100,
-      page = 1,
-      search,
-      type = null
-    } = { limit: 20, page: 1, type: null }) {
-      const { data } = yield __privateGet(this, _axiosInstance).get(
-        `/v1/chats?search=${search}&limit=${limit}&page=${page}${type ? `&type=${type}` : ""}`
-      );
+    return __async(this, arguments, function* (query = { limit: 20, page: 1, type: null }) {
+      const { data } = yield __privateGet(this, _axiosInstance).get(`/v1/chats?${queryStringify(query)}`);
       return data;
     });
   }

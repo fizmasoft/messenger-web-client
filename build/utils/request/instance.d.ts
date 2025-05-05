@@ -1,5 +1,5 @@
+import type { LangType } from '../../types/system';
 import type { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { LangType } from '../../types/system';
 /**
  * Encapsulate axios request class
  * @author Umar<creativeboy1999@gmail.com>

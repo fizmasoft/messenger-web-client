@@ -1,6 +1,6 @@
 import FormData from 'form-data';
-import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { Socket, ManagerOptions, SocketOptions } from 'socket.io-client';
+import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { DisconnectDescription } from 'socket.io-client/build/esm/socket';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 
@@ -67,97 +67,6 @@ declare global {
     interface Date {
         toFormatted: (separator?: string) => IFormattedDate;
     }
-}
-
-type SuccessResponseData<T> = {
-    message: string;
-} | T | T[];
-type FailResponseData = string[];
-interface IMetaData {
-    limit: number;
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
-}
-interface ISuccessResponse<T> {
-    data: SuccessResponseData<T>;
-    meta: IMetaData;
-    code: number;
-    message: string;
-    success: true;
-    time: string;
-    requestId: string;
-}
-interface IFailResponse {
-    message: string;
-    data: FailResponseData;
-    meta: IMetaData;
-    code: number;
-    success: false;
-    time: string;
-    requestId: string;
-}
-type MyApiResponse<T = unknown> = ISuccessResponse<T> | IFailResponse;
-
-interface IPolygonPoint {
-    polygon: {
-        geometry: {
-            type: 'Point';
-            coordinates: [number, number];
-        };
-        properties: any;
-        type: 'Feature';
-    };
-    radius: number;
-}
-interface IPolygon {
-    polygon: {
-        geometry: {
-            type: 'Polygon';
-            coordinates: [number, number][];
-        };
-        properties: any;
-        type: 'Feature';
-    };
-}
-interface IPolygonLine {
-    polygon: {
-        geometry: {
-            coordinates: [number, number][];
-            type: 'LineString';
-        };
-        properties: any;
-        type: 'Feature';
-    };
-    left: 50;
-    right: 50;
-}
-interface by {
-    region: number;
-    district: number;
-    byArea: IPolygonPoint;
-    polygon: IPolygon;
-    polygonPoint: IPolygonPoint;
-    polygonLine: IPolygonLine;
-}
-type IByArea<T extends keyof by> = {
-    [key in T]: by[T];
-} & {
-    by: T;
-};
-type FilterPolygonArea = IByArea<'region'> | IByArea<'district'> | IByArea<'byArea'> | IByArea<'polygon'> | IByArea<'polygonLine'> | IByArea<'polygonPoint'>;
-
-type ChatType = 'private' | 'group' | 'channel' | 'bot';
-interface IChat {
-    _id: string;
-    title: string;
-    photo: string;
-    lastMessage: string;
-    lastMessageCreatedAt: string;
-    lastMessageIsRead: boolean;
-    senderIsMe: boolean;
-    isOnline: boolean;
-    unreadMessageCount: number;
 }
 
 type MessageType = 'text' | 'wanted' | 'audio' | 'photo' | 'gif' | 'video' | 'mediaGroup' | 'documentGroup' | 'document' | 'location' | 'liveLocation';
@@ -275,6 +184,97 @@ interface IMessage {
     wanted?: IChatMessageWanted;
 }
 
+type SuccessResponseData<T> = {
+    message: string;
+} | T | T[];
+type FailResponseData = string[];
+interface IMetaData {
+    limit: number;
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+}
+interface ISuccessResponse<T> {
+    data: SuccessResponseData<T>;
+    meta: IMetaData;
+    code: number;
+    message: string;
+    success: true;
+    time: string;
+    requestId: string;
+}
+interface IFailResponse {
+    message: string;
+    data: FailResponseData;
+    meta: IMetaData;
+    code: number;
+    success: false;
+    time: string;
+    requestId: string;
+}
+type MyApiResponse<T = unknown> = ISuccessResponse<T> | IFailResponse;
+
+interface IPolygonPoint {
+    polygon: {
+        geometry: {
+            type: 'Point';
+            coordinates: [number, number];
+        };
+        properties: any;
+        type: 'Feature';
+    };
+    radius: number;
+}
+interface IPolygon {
+    polygon: {
+        geometry: {
+            type: 'Polygon';
+            coordinates: [number, number][];
+        };
+        properties: any;
+        type: 'Feature';
+    };
+}
+interface IPolygonLine {
+    polygon: {
+        geometry: {
+            coordinates: [number, number][];
+            type: 'LineString';
+        };
+        properties: any;
+        type: 'Feature';
+    };
+    left: 50;
+    right: 50;
+}
+interface by {
+    region: number;
+    district: number;
+    byArea: IPolygonPoint;
+    polygon: IPolygon;
+    polygonPoint: IPolygonPoint;
+    polygonLine: IPolygonLine;
+}
+type IByArea<T extends keyof by> = {
+    [key in T]: by[T];
+} & {
+    by: T;
+};
+type FilterPolygonArea = IByArea<'region'> | IByArea<'district'> | IByArea<'byArea'> | IByArea<'polygon'> | IByArea<'polygonLine'> | IByArea<'polygonPoint'>;
+
+type ChatType = 'private' | 'group' | 'channel' | 'bot';
+interface IChat {
+    _id: string;
+    title: string;
+    photo: string;
+    lastMessage: string;
+    lastMessageCreatedAt: string;
+    lastMessageIsRead: boolean;
+    senderIsMe: boolean;
+    isOnline: boolean;
+    unreadMessageCount: number;
+}
+
 interface IUser {
     _id: string;
     fullName: string;
@@ -377,11 +377,11 @@ declare class Messenger {
     sendMessage(chatId: string, message: ISendMessage | FormData): Promise<MyApiResponse<IUser>>;
     sendMessageToNewUser(message: ISendMessage): Promise<MyApiResponse<IUser>>;
     sendMessageToArea(filter: FilterPolygonArea, message: ISendMessageToArea): Promise<MyApiResponse<IUser>>;
-    getChatMessages(chatId: string, { limit, page, search }?: {
+    getChatMessages(chatId: string, query?: {
         limit?: number;
         page?: number;
         search?: string;
-    }): Promise<MyApiResponse<IMessage>>;
+    } & Record<string, any>): Promise<MyApiResponse<IMessage>>;
     getChatInfo(chatId: string): Promise<unknown>;
     getChatMedia(chatId: string, { limit, page }?: {
         limit?: number;
@@ -417,12 +417,12 @@ declare class Messenger {
         messageId: string;
         messageReadAt: string;
     }): Promise<any>;
-    getChats({ limit, page, search, type, }?: {
+    getChats(query?: {
         limit?: number;
         page?: number;
         search?: string;
         type?: ChatType;
-    }): Promise<MyApiResponse<IChat>>;
+    } & Record<string, any>): Promise<MyApiResponse<IChat>>;
     ping(): this;
 }
 declare function getMessenger(customOptions: CustomOptions, options?: Partial<ManagerOptions & SocketOptions>): Messenger;
