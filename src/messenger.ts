@@ -387,14 +387,14 @@ class Messenger {
    * @returns {[]}
    */
   public async searchUser(
-    { limit = 20, page = 1, search = '' }: { limit?: number; page?: number; search?: string } = {
+    query: { limit?: number; page?: number; search?: string } & Record<string, any> = {
       limit: 20,
       page: 1,
       search: '',
     },
   ): Promise<MyApiResponse<IUser>> {
     const { data } = await this.#axiosInstance.get<MyApiResponse<IUser>>(
-      `/v1/users?search=${search}&limit=${limit}&page=${page}`,
+      `/v1/users??${queryStringify(query)}`,
     );
 
     return data;
