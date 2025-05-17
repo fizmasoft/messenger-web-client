@@ -1,8 +1,8 @@
-import { DefaultEventsMap } from '@socket.io/component-emitter';
-import { Socket } from 'socket.io-client';
-import { DisconnectDescription } from 'socket.io-client/build/esm/socket';
-import { IChatAction, IOnUpdate } from './api/message.types';
-import { LangType } from './system';
+import type { DefaultEventsMap } from '@socket.io/component-emitter';
+import type { Socket } from 'socket.io-client';
+import type { DisconnectDescription } from 'socket.io-client/build/esm/socket';
+import type { IChatAction, IOnUpdate } from './api/message.types';
+import type { LangType } from './system';
 export declare enum DeviceTypesEnum {
     WEB = "web",
     APP = "app",

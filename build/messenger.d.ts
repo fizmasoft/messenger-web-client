@@ -37,11 +37,11 @@ declare class Messenger {
      * @param search id or username
      * @returns {[]}
      */
-    searchUser({ limit, page, search }?: {
+    searchUser(query?: {
         limit?: number;
         page?: number;
         search?: string;
-    }): Promise<MyApiResponse<IUser>>;
+    } & Record<string, any>): Promise<MyApiResponse<IUser>>;
     sendMessage(chatId: string, message: ISendMessage | FormData): Promise<MyApiResponse<IUser>>;
     sendMessageToNewUser(message: ISendMessage): Promise<MyApiResponse<IUser>>;
     sendMessageToArea(filter: FilterPolygonArea, message: ISendMessageToArea): Promise<MyApiResponse<IUser>>;

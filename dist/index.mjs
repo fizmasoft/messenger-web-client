@@ -1236,13 +1236,13 @@ var Messenger = class {
    * @returns {[]}
    */
   searchUser() {
-    return __async(this, arguments, function* ({ limit = 20, page = 1, search = "" } = {
+    return __async(this, arguments, function* (query = {
       limit: 20,
       page: 1,
       search: ""
     }) {
       const { data } = yield __privateGet(this, _axiosInstance).get(
-        `/v1/users?search=${search}&limit=${limit}&page=${page}`
+        `/v1/users??${queryStringify(query)}`
       );
       return data;
     });
