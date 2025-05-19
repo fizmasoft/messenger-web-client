@@ -29,7 +29,6 @@ let appVersion = '1.5.6';
 //     appVersion = json.version;
 //   })
 //   .catch((err) => {
-//     console.log(err);
 //   });
 
 const getDeviceModel = (): string => {
@@ -57,7 +56,6 @@ function queryStringify(obj: Record<string, any>, parentKey?: string): string {
 
   return Object.keys(obj)
     .map((key) => {
-      console.log(key, obj[key]);
       if (Array.isArray(obj[key])) {
         if (parentKey) {
           return obj[key]

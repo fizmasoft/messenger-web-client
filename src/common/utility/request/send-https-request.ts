@@ -65,7 +65,6 @@ export async function request(opts: MyHttpRequestOptions): Promise<unknown> {
           resolve(JSON.parse(data));
         })
         .on('error', (err) => {
-          console.log(err, 'error while res');
           reject(err);
         });
     });
@@ -78,7 +77,6 @@ export async function request(opts: MyHttpRequestOptions): Promise<unknown> {
 
     req
       .on('error', (err) => {
-        console.log(err, 'error while req');
         reject(err);
       })
       .end();
