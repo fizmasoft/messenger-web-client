@@ -11,15 +11,15 @@ import type { IOnUpdate, MessageType } from './types/api/message.types';
 import type { IUser } from './types/api/user';
 import type { CustomOptions, IEvents, IPollingOptions, ISocketOptions } from './types/types';
 
-import { io } from 'socket.io-client';
-import { v1 as uuidV1 } from 'uuid';
+import io from 'socket.io-client';
+import uuid from 'uuid';
 
 import { ENV } from './common/config';
 import { DeviceTypesEnum } from './types/types';
 import { CustomAxiosInstance, localStg } from './utils';
 
 const localUid = localStg.get('messengerDeviceUid');
-const uid = localUid ? localUid : uuidV1();
+const uid = localUid ? localUid : uuid.v1();
 localStg.set('messengerDeviceUid', uid);
 let appVersion = '1.5.6';
 
