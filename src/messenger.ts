@@ -392,7 +392,7 @@ class Messenger {
     },
   ): Promise<MyApiResponse<IUser>> {
     const { data } = await this.#axiosInstance.get<MyApiResponse<IUser>>(
-      `/v1/users??${queryStringify(query)}`,
+      `/v1/users?${queryStringify(query)}`,
     );
 
     return data;
