@@ -864,7 +864,7 @@ var Messenger = class {
       search: ""
     }) {
       const { data } = yield __privateGet(this, _axiosInstance).get(
-        `/v1/users??${queryStringify(query)}`
+        `/v1/users?${queryStringify(query)}`
       );
       return data;
     });
