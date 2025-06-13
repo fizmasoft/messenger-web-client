@@ -12,14 +12,21 @@ import type { IUser } from './types/api/user';
 import type { CustomOptions, IEvents, IPollingOptions, ISocketOptions } from './types/types';
 
 import io from 'socket.io-client';
-import uuid from 'uuid';
 
 import { ENV } from './common/config';
 import { DeviceTypesEnum } from './types/types';
 import { CustomAxiosInstance, localStg } from './utils';
 
+function generateUUIDv4Like() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8; // 'y' uchun 8, 9, A, B ni beradi
+    return v.toString(16);
+  });
+}
+
 const localUid = localStg.get('messengerDeviceUid');
-const uid = localUid ? localUid : uuid.v1();
+const uid = localUid ? localUid : generateUUIDv4Like();
 localStg.set('messengerDeviceUid', uid);
 let appVersion = '1.5.6';
 
