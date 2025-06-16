@@ -1,7 +1,6 @@
 import type { ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
 import type { DefaultEventsMap } from '@socket.io/component-emitter';
 import type { AxiosInstance } from 'axios';
-import type FormData from 'form-data';
 
 import type { IMessage, ISendMessage, ISendMessageToArea } from './types/api/message';
 import type { MyApiResponse } from './types/api';
@@ -12,6 +11,7 @@ import type { IUser } from './types/api/user';
 import type { CustomOptions, IEvents, IPollingOptions, ISocketOptions } from './types/types';
 
 import io from 'socket.io-client';
+import FormData from 'form-data';
 
 import { ENV } from './common/config';
 import { DeviceTypesEnum } from './types/types';
@@ -382,7 +382,7 @@ class Messenger {
       return;
     }
 
-    this.#events[event].filter((cb) => cb.name !== callback.name);
+    this.#events[event] = this.#events[event].filter((cb) => cb.name !== callback.name) as any;
     return this;
   }
 
@@ -453,6 +453,7 @@ class Messenger {
     return data;
   }
 
+  // TODO:
   public async getChatMedia(
     chatId: string,
     { limit = 20, page = 1 }: { limit?: number; page?: number } = { limit: 20, page: 1 },
@@ -460,6 +461,7 @@ class Messenger {
     return [];
   }
 
+  // TODO:
   public async getChatFiles(
     chatId: string,
     { limit = 20, page = 1 }: { limit?: number; page?: number } = { limit: 20, page: 1 },
@@ -467,6 +469,7 @@ class Messenger {
     return [];
   }
 
+  // TODO:
   public async getChatAudios(
     chatId: string,
     { limit = 20, page = 1 }: { limit?: number; page?: number } = { limit: 20, page: 1 },
